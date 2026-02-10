@@ -1,0 +1,39 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Menu from '../components/Menu';
+---
+
+<Layout>
+	<main class="min-h-screen bg-gray-950">
+		{/* Hero Section */}
+		<div class="relative h-[40vh] min-h-[400px] w-full overflow-hidden">
+			<div class="absolute inset-0 bg-gray-900">
+				<img 
+					src="https://placehold.co/1920x800?text=Nomade+Tibetan+Cuisine" 
+					alt="Restaurant Hero" 
+					class="w-full h-full object-cover opacity-60"
+				/>
+				<div class="absolute inset-0 bg-gradient-to-b from-transparent to-gray-950"></div>
+			</div>
+			
+			<div class="relative z-10 h-full flex flex-col items-center justify-center text-center px-4">
+				<h1 class="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight drop-shadow-lg">
+					<span class="text-amber-500">Nomade</span> Tibetan Cuisine
+				</h1>
+				<p class="text-xl md:text-2xl text-gray-300 font-light tracking-wide max-w-2xl">
+					Authentic Flavors from the Himalayas
+				</p>
+			</div>
+		</div>
+
+		{/* Menu Section */}
+		<div class="relative z-20 -mt-20">
+			<Menu client:load />
+		</div>
+		
+		{/* Footer */}
+		<footer class="py-12 text-center text-gray-500 text-sm border-t border-gray-900 mt-20">
+			<p>&copy; {new Date().getFullYear()} Nomade Tibetan Cuisine. All rights reserved.</p>
+		</footer>
+	</main>
+</Layout>
