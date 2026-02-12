@@ -1,12 +1,47 @@
 import React, { useState } from 'react';
 import { menuData, type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
-import { ChevronRight, Star, LayoutGrid, List } from 'lucide-react';
+import { ChevronRight, Star, LayoutGrid, List, ShoppingBag, X, Plus, Minus, Trash2 } from 'lucide-react';
+
+interface CartItem {
+    item: MenuItem;
+    quantity: number;
+}
 
 export default function Menu() {
     const [activeMainId, setActiveMainId] = useState(menuData[0].id);
     const activeMainCategory = menuData.find(c => c.id === activeMainId) || menuData[0];
     const [activeSubId, setActiveSubId] = useState(activeMainCategory.subCategories[0].id);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const [cartItems, setCartItems] = useState<CartItem[]>([]);
+    const [isCartOpen, setIsCartOpen] = useState(false);
+
+    const addToCart = (item: MenuItem) => {
+        setCartItems(prev => {
+            const existing = prev.find(i => i.item.id === item.id);
+            if (existing) {
+                return prev.map(i => i.item.id === item.id ? { ...i, quantity: i.quantity + 1 } : i);
+            }
+            return [...prev, { item, quantity: 1 }];
+        });
+    };
+
+    const updateQuantity = (itemId: string, delta: number) => {
+        setCartItems(prev => prev.map(i => {
+            if (i.item.id === itemId) {
+                return { ...i, quantity: Math.max(0, i.quantity + delta) };
+            }
+            return i;
+        }).filter(i => i.quantity > 0));
+    };
+
+    const removeFromCart = (itemId: string) => {
+        setCartItems(prev => prev.filter(i => i.item.id !== itemId));
+    };
+
+    const cartTotal = cartItems.reduce((sum, cartItem) => {
+        const price = parseFloat(cartItem.item.price.replace(/[^0-9.]/g, ''));
+        return sum + price * cartItem.quantity;
+    }, 0);
 
     const handleMainChange = (id: string) => {
         if (id === activeMainId) return;
@@ -22,8 +57,24 @@ export default function Menu() {
     return (
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 relative">
 
-            {/* View Toggle - Top Right */}
-            <div className="absolute top-4 right-4 sm:top-12 sm:right-8 z-10 flex bg-gray-900/80 backdrop-blur-md rounded-lg p-1 border border-gray-800">
+            {/* Cart Floating Button - Top Right */}
+            <button
+                onClick={() => setIsCartOpen(true)}
+                className="fixed top-4 right-4 z-50 p-3 bg-amber-600 text-white rounded-full shadow-lg hover:bg-amber-700 transition-all duration-300 hover:scale-110 border-2 border-amber-500/50"
+                aria-label="Open Cart"
+            >
+                <div className="relative">
+                    <ShoppingBag size={24} />
+                    {cartItems.length > 0 && (
+                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-900">
+                            {cartItems.reduce((a, b) => a + b.quantity, 0)}
+                        </span>
+                    )}
+                </div>
+            </button>
+
+            {/* View Toggle - Top Left */}
+            <div className="absolute top-4 left-4 sm:top-12 sm:left-8 z-10 flex bg-gray-900/80 backdrop-blur-md rounded-lg p-1 border border-gray-800">
                 <button
                     onClick={() => setViewMode('grid')}
                     className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
@@ -113,7 +164,10 @@ export default function Menu() {
                                 </div>
                                 <p className="text-gray-400 text-xs md:text-sm leading-snug md:leading-relaxed mb-4 md:mb-6 flex-grow line-clamp-3 md:line-clamp-none">{item.description}</p>
 
-                                <button className="w-full py-2 md:py-3 bg-gray-800 hover:bg-amber-600 hover:text-white text-gray-300 rounded-lg md:rounded-xl transition-all duration-300 font-semibold text-xs md:text-sm flex items-center justify-center gap-1.5 md:gap-2 group-hover:bg-amber-600 group-hover:text-white">
+                                <button
+                                    onClick={() => addToCart(item)}
+                                    className="w-full py-2 md:py-3 bg-gray-800 hover:bg-amber-600 hover:text-white text-gray-300 rounded-lg md:rounded-xl transition-all duration-300 font-semibold text-xs md:text-sm flex items-center justify-center gap-1.5 md:gap-2 group-hover:bg-amber-600 group-hover:text-white"
+                                >
                                     <span>Add</span>
                                     <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 transition-transform group-hover:translate-x-1" />
                                 </button>
@@ -160,7 +214,10 @@ export default function Menu() {
                                             </span>
                                         ))}
                                     </div>
-                                    <button className="ml-auto px-4 py-2 bg-gray-800 hover:bg-amber-600 hover:text-white text-gray-300 rounded-lg transition-all duration-300 font-semibold text-xs md:text-sm flex items-center gap-1 group-hover:bg-amber-600 group-hover:text-white">
+                                    <button
+                                        onClick={() => addToCart(item)}
+                                        className="ml-auto px-4 py-2 bg-gray-800 hover:bg-amber-600 hover:text-white text-gray-300 rounded-lg transition-all duration-300 font-semibold text-xs md:text-sm flex items-center gap-1 group-hover:bg-amber-600 group-hover:text-white"
+                                    >
                                         <span>Add</span>
                                         <ChevronRight className="w-4 h-4" />
                                     </button>
@@ -168,6 +225,104 @@ export default function Menu() {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Cart Drawer */}
+            {isCartOpen && (
+                <div className="fixed inset-0 z-[60]">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity"
+                        onClick={() => setIsCartOpen(false)}
+                    ></div>
+
+                    {/* Drawer Panel */}
+                    <div className="absolute top-0 right-0 h-full w-full max-w-md bg-gray-900 shadow-2xl border-l border-gray-800 transform transition-transform duration-300 overflow-y-auto">
+                        <div className="p-6 h-full flex flex-col">
+                            <div className="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+                                <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                                    <ShoppingBag className="text-amber-500" />
+                                    Your Order
+                                </h2>
+                                <button
+                                    onClick={() => setIsCartOpen(false)}
+                                    className="p-2 text-gray-400 hover:text-white hover:bg-gray-800 rounded-lg transition-colors"
+                                >
+                                    <X size={24} />
+                                </button>
+                            </div>
+
+                            {cartItems.length === 0 ? (
+                                <div className="flex-grow flex flex-col items-center justify-center text-gray-500 text-center">
+                                    <ShoppingBag size={48} className="mb-4 opacity-20" />
+                                    <p className="text-lg font-medium">Your cart is empty</p>
+                                    <p className="text-sm mt-2">Start adding some delicious items!</p>
+                                    <button
+                                        onClick={() => setIsCartOpen(false)}
+                                        className="mt-6 px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors"
+                                    >
+                                        Browse Menu
+                                    </button>
+                                </div>
+                            ) : (
+                                <>
+                                    <div className="flex-grow space-y-4 overflow-y-auto pr-2 custom-scrollbar">
+                                        {cartItems.map((cartItem) => (
+                                            <div key={cartItem.item.id} className="flex gap-4 p-4 bg-gray-800/50 rounded-xl border border-gray-800">
+                                                <img
+                                                    src={cartItem.item.image}
+                                                    alt={cartItem.item.name}
+                                                    className="w-20 h-20 object-cover rounded-lg"
+                                                />
+                                                <div className="flex-grow flex flex-col justify-between">
+                                                    <div className="flex justify-between items-start">
+                                                        <h3 className="text-white font-medium line-clamp-1 pr-2">{cartItem.item.name}</h3>
+                                                        <button
+                                                            onClick={() => removeFromCart(cartItem.item.id)}
+                                                            className="text-gray-500 hover:text-red-500 transition-colors p-1"
+                                                            aria-label="Remove item"
+                                                        >
+                                                            <X size={18} />
+                                                        </button>
+                                                    </div>
+
+                                                    <div className="flex items-center justify-between mt-2">
+                                                        <p className="text-amber-500 font-bold">{cartItem.item.price}</p>
+                                                        <div className="flex items-center gap-3 bg-gray-900 rounded-lg p-1">
+                                                            <button
+                                                                onClick={() => updateQuantity(cartItem.item.id, -1)}
+                                                                className="p-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors"
+                                                            >
+                                                                <Minus size={16} />
+                                                            </button>
+                                                            <span className="text-white font-medium w-4 text-center">{cartItem.quantity}</span>
+                                                            <button
+                                                                onClick={() => updateQuantity(cartItem.item.id, 1)}
+                                                                className="p-1 text-gray-400 hover:text-white hover:bg-gray-800 rounded-md transition-colors"
+                                                            >
+                                                                <Plus size={16} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    <div className="mt-8 border-t border-gray-800 pt-6">
+                                        <div className="flex justify-between items-center mb-6">
+                                            <span className="text-gray-400 text-lg">Total</span>
+                                            <span className="text-3xl font-bold text-amber-500">${cartTotal.toFixed(2)}</span>
+                                        </div>
+                                        <button className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-amber-900/20 transition-all transform hover:-translate-y-1">
+                                            Checkout
+                                        </button>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+                    </div>
                 </div>
             )}
         </div>
