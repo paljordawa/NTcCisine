@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
-import { ChevronRight, Star, LayoutGrid, List, ShoppingBag, X, Plus, Minus, Trash2 } from 'lucide-react';
+import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2 } from 'lucide-react';
 
 interface CartItem {
     item: MenuItem;
@@ -68,7 +68,7 @@ export default function Menu({ initialData }: MenuProps) {
                 aria-label="Open Cart"
             >
                 <div className="relative">
-                    <ShoppingBag size={24} />
+                    <ConciergeBell size={24} />
                     {cartItems.length > 0 && (
                         <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-900">
                             {cartItems.reduce((a, b) => a + b.quantity, 0)}
@@ -246,7 +246,7 @@ export default function Menu({ initialData }: MenuProps) {
                         <div className="p-6 h-full flex flex-col">
                             <div className="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
                                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                                    <ShoppingBag className="text-amber-500" />
+                                    <ConciergeBell className="text-amber-500" />
                                     Your Order
                                 </h2>
                                 <button
@@ -259,7 +259,7 @@ export default function Menu({ initialData }: MenuProps) {
 
                             {cartItems.length === 0 ? (
                                 <div className="flex-grow flex flex-col items-center justify-center text-gray-500 text-center">
-                                    <ShoppingBag size={48} className="mb-4 opacity-20" />
+                                    <ConciergeBell size={48} className="mb-4 opacity-20" />
                                     <p className="text-lg font-medium">Your cart is empty</p>
                                     <p className="text-sm mt-2">Start adding some delicious items!</p>
                                     <button
