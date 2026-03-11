@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { menuData, type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
+import { type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
 import { ChevronRight, Star, LayoutGrid, List, ShoppingBag, X, Plus, Minus, Trash2 } from 'lucide-react';
 
 interface CartItem {
@@ -7,9 +7,13 @@ interface CartItem {
     quantity: number;
 }
 
-export default function Menu() {
-    const [activeMainId, setActiveMainId] = useState(menuData[0].id);
-    const activeMainCategory = menuData.find(c => c.id === activeMainId) || menuData[0];
+interface MenuProps {
+    initialData: MainCategory[];
+}
+
+export default function Menu({ initialData }: MenuProps) {
+    const [activeMainId, setActiveMainId] = useState(initialData[0].id);
+    const activeMainCategory = initialData.find(c => c.id === activeMainId) || initialData[0];
     const [activeSubId, setActiveSubId] = useState(activeMainCategory.subCategories[0].id);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -46,7 +50,7 @@ export default function Menu() {
     const handleMainChange = (id: string) => {
         if (id === activeMainId) return;
         setActiveMainId(id);
-        const newMain = menuData.find(c => c.id === id);
+        const newMain = initialData.find(c => c.id === id);
         if (newMain && newMain.subCategories.length > 0) {
             setActiveSubId(newMain.subCategories[0].id);
         }
@@ -94,7 +98,7 @@ export default function Menu() {
             {/* Level 1 Tabs (Main Categories) */}
             <div className="flex justify-center mb-10 pt-12 sm:pt-0">
                 <div className="inline-flex bg-gray-900/50 p-1.5 rounded-full border border-gray-800 backdrop-blur-sm overflow-x-auto max-w-full">
-                    {menuData.map(category => (
+                    {initialData.map(category => (
                         <button
                             key={category.id}
                             onClick={() => handleMainChange(category.id)}

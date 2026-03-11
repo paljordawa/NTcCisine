@@ -1,32 +1,42 @@
-# Astro Starter Kit: Basics
+# Nomade Tibetan Cuisine - Restaurant Menu Web App
 
-```sh
-npm create astro@latest -- --template basics
-```
+[https://ntcucine.netlify.app/](https://ntcucine.netlify.app/)
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+This is a modern, responsive web application for a Tibetan restaurant called "Nomade Tibetan Cuisine". It displays a categorized food and beverage menu using a beautiful, dark-themed UI.
 
-## 🚀 Project Structure
+## 🚀 Features
 
-Inside of your Astro project, you'll see the following folders and files:
+*   **Responsive Design:** Fully responsive layout that looks great on both mobile and desktop.
+*   **Dynamic Menu System:** A two-tier tab system handling main categories (Food/Beverages) and subcategories (Starters, Momos, etc.).
+*   **Rich Aesthetics:** Premium dark-mode styling with subtle gradients, glassmorphism effects, and a custom Tibetan background pattern.
+*   **Performance:** Built with Astro for incredibly fast, zero-JS-by-default page loads.
+*   **Modern Interactive Components:** React components for interactive state management (tab switching).
+
+## 🛠️ Tech Stack
+
+*   **Framework:** [Astro](https://astro.build/) - For fast static site generation and component islands.
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework for rapid UI development.
+*   **UI Components:** React (embedded as Astro Islands using `client:load`).
+*   **Icons:** `lucide-react` for beautiful, scalable SVG icons.
+
+## 📁 Project Structure
 
 ```text
 /
 ├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+│   ├── tibetan-pattern.avif       # Background pattern asset
+│   └── Tibetan-cuisine.jpg        # Hero area background image
+├── src/
+│   ├── components/
+│   │   └── Menu.tsx               # Primary interactive React component handling the menu state and rendering
+│   ├── layouts/
+│   │   └── Layout.astro           # Main HTML shell, global CSS, and fonts
+│   └── pages/
+│       └── index.astro            # Application homepage (Hero section and Menu container)
+├── astro.config.mjs               # Astro configuration file
+├── tailwind.config.mjs            # Tailwind CSS configuration theme and customizations
+└── package.json                   # Project dependencies and operational scripts
 ```
-
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
 
 ## 🧞 Commands
 
@@ -34,13 +44,26 @@ All commands are run from the root of the project, from a terminal:
 
 | Command                   | Action                                           |
 | :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+| `pnpm install`            | Installs dependencies (requires pnpm)            |
+| `pnpm run dev`            | Starts local dev server at `localhost:4321`      |
+| `pnpm run build`          | Build your production site to `./dist/`          |
+| `pnpm run preview`        | Preview your build locally, before deploying     |
 
-## 👀 Want to learn more?
+## 🎨 Design System
 
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+The application uses a custom Tailwind configuration (`tailwind.config.mjs`) extending the default palette:
+*   **Primary Accent:** Amber (`amber-500` to `amber-700`) representing warmth and spices.
+*   **Backgrounds:** Deep grays/blacks (`gray-900`, `gray-950`) with slate undertones (`slate-800`).
+*   **Typography:** 'Inter' font family for clean, modern readability.
+
+## 📝 Modification Guide
+
+### Adding New Menu Items
+To add or modify menu items, edit the `menuData` object located at the top of `src/components/Menu.tsx`. The data is structured hierarchically:
+`Main Category` -> `Subcategory` -> `Array of Item Objects`.
+
+### Changing Background Images
+The hero and pattern images are controlled in `src/pages/index.astro`. Replace the files in the `public/` folder and update the filenames in the `.astro` file if necessary.
+
+---
+*Built with ❤️ for Nomade Tibetan Cuisine.*
