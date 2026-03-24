@@ -217,7 +217,7 @@ export default function CounterDashboard() {
                                     <div className="flex justify-between items-end border-t border-gray-800 pt-4 mt-auto">
                                         <span className="text-gray-400 uppercase tracking-wider text-sm font-bold">Total</span>
                                         <span className={`text-2xl font-bold ${items.length === 0 ? 'text-gray-600 line-through' : 'text-amber-500'}`}>
-                                            ${order.cartTotal.toFixed(2)}
+                                            CHF {order.cartTotal.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>

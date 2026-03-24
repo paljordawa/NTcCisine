@@ -357,7 +357,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     <div className="mt-8 border-t border-gray-800 pt-6">
                                         <div className="flex justify-between items-center mb-6">
                                             <span className="text-gray-400 text-lg">Total</span>
-                                            <span className="text-3xl font-bold text-amber-500">${cartTotal.toFixed(2)}</span>
+                                            <span className="text-3xl font-bold text-amber-500">CHF {cartTotal.toFixed(2)}</span>
                                         </div>
                                         
                                         {submitMessage && (
