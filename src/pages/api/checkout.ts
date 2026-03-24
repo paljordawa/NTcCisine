@@ -28,9 +28,22 @@ export const POST: APIRoute = async ({ request }) => {
       });
     }
 
-    // Format the receipt data for Loyverse API
-    // https://developer.loyverse.com/docs/#tag/Receipts/paths/~1receipts/post
-    // Loyverse expects specific shape for receipt creation. We are mapping our cart items to receipt lines.
+    const headers = {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${loyverseToken}`
+    };
+
+    const [storeRes, paymentRes] = await Promise.all([
+      fetch('https://api.loyverse.com/v1.0/stores', { headers }),
+      fetch('https://api.loyverse.com/v1.0/payment_types', { headers })
+    ]);
+    
+    const storesData = await storeRes.json();
+    const paymentsData = await paymentRes.json();
+    
+    const store_id = storesData.stores[0].id;
+    const payment_type_id = paymentsData.payment_types[0].id;
+
     const receiptLines = cartItems.map((item: any, index: number) => {
         const price = parseFloat(item.item.price.replace(/[^0-9.]/g, ''));
         return {
@@ -44,14 +57,18 @@ export const POST: APIRoute = async ({ request }) => {
     });
 
     const loyverseOrderData = {
-      receipts: [
+      store_id: store_id,
+      receipt_type: 'SALE',
+      receipt_date: new Date().toISOString(),
+      total_money: cartTotal,
+      line_items: receiptLines,
+      payments: [
         {
-          receipt_type: 'SALE',
-          total_money: cartTotal,
-          line_items: receiptLines,
-          note: `Web Order Placed at ${new Date().toLocaleTimeString()}`
+          payment_type_id: payment_type_id,
+          money: cartTotal
         }
-      ]
+      ],
+      note: `Web Order Placed at ${new Date().toLocaleTimeString()}`
     };
 
     console.log("Sending order to Loyverse:", JSON.stringify(loyverseOrderData, null, 2));
@@ -59,10 +76,7 @@ export const POST: APIRoute = async ({ request }) => {
     // Send the order to Loyverse
     const loyverseResponse = await fetch('https://api.loyverse.com/v1.0/receipts', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${loyverseToken}`
-      },
+      headers: headers,
       body: JSON.stringify(loyverseOrderData)
     });
 
