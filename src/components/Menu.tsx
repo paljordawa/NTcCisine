@@ -19,7 +19,7 @@ export default function Menu({ initialData }: MenuProps) {
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
+    const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
 
     const addToCart = (item: MenuItem) => {
         setCartItems(prev => {
@@ -69,7 +69,7 @@ export default function Menu({ initialData }: MenuProps) {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     cartItems,
                     cartTotal
                 }),
@@ -155,7 +155,7 @@ export default function Menu({ initialData }: MenuProps) {
             </div>
 
             {/* Level 2 Tabs (Sub Categories) */}
-            <div className="flex flex-col items-center mb-12">
+            {/* <div className="flex flex-col items-center mb-12">
                 <h2 className="text-3xl font-bold text-white mb-6 tracking-tight relative inline-block">
                     {activeMainCategory.name}
                     <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-amber-600 rounded-full"></span>
@@ -175,7 +175,7 @@ export default function Menu({ initialData }: MenuProps) {
                         </button>
                     ))}
                 </div>
-            </div>
+            </div> */}
 
             {/* Menu Content */}
             {viewMode === 'grid' ? (
@@ -359,14 +359,14 @@ export default function Menu({ initialData }: MenuProps) {
                                             <span className="text-gray-400 text-lg">Total</span>
                                             <span className="text-3xl font-bold text-amber-500">CHF {cartTotal.toFixed(2)}</span>
                                         </div>
-                                        
+
                                         {submitMessage && (
                                             <div className={`p-3 rounded-lg mb-4 text-center text-sm font-medium ${submitMessage.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
                                                 {submitMessage.text}
                                             </div>
                                         )}
 
-                                        <button 
+                                        <button
                                             onClick={handleCheckout}
                                             disabled={isSubmitting || cartItems.length === 0}
                                             className="w-full py-4 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:transform-none disabled:shadow-none text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-amber-900/20 transition-all transform hover:-translate-y-1 flex justify-center items-center"
