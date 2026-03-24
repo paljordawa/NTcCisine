@@ -1,0 +1,10 @@
+---
+import Layout from "../layouts/Layout.astro";
+import CounterDashboard from "../components/CounterDashboard";
+---
+
+<Layout>
+    <main class="min-h-screen bg-gray-950 p-4 sm:p-8">
+        <CounterDashboard client:only="react" />
+    </main>
+</Layout>

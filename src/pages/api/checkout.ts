@@ -1,6 +1,7 @@
 export const prerender = false;
 
 import type {APIRoute} from 'astro';
+import { db, Order } from 'astro:db';
 
 export const POST: APIRoute = async ({ request }) => {
   try {
@@ -10,103 +11,36 @@ export const POST: APIRoute = async ({ request }) => {
     if (!cartItems || cartItems.length === 0) {
       return new Response(JSON.stringify({ error: 'Cart is empty' }), {
         status: 400,
-        headers: {
-          'Content-Type': 'application/json'
-        }
+        headers: { 'Content-Type': 'application/json' }
       });
     }
 
-    const loyverseToken = import.meta.env.LOYVERSE_ACCESS_TOKEN;
+    const orderId = crypto.randomUUID();
 
-    if (!loyverseToken) {
-      console.error('LOYVERSE_ACCESS_TOKEN is missing in environment variables.');
-      return new Response(JSON.stringify({ error: 'Server configuration error' }), {
-        status: 500,
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-    }
-
-    const headers = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${loyverseToken}`
-    };
-
-    const [storeRes, paymentRes] = await Promise.all([
-      fetch('https://api.loyverse.com/v1.0/stores', { headers }),
-      fetch('https://api.loyverse.com/v1.0/payment_types', { headers })
-    ]);
-    
-    const storesData = await storeRes.json();
-    const paymentsData = await paymentRes.json();
-    
-    const store_id = storesData.stores[0].id;
-    const payment_type_id = paymentsData.payment_types[0].id;
-
-    const receiptLines = cartItems.map((item: any, index: number) => {
-        const price = parseFloat(item.item.price.replace(/[^0-9.]/g, ''));
-        return {
-             line_num: index + 1,
-             item_id: item.item.item_id,
-             variant_id: item.item.variant_id,
-             quantity: item.quantity,
-             price: price,
-             total_money: price * item.quantity,
-        }
+    await db.insert(Order).values({
+      id: orderId,
+      cartItems: cartItems, // astro:db json() handles objects automatically
+      cartTotal: cartTotal,
+      status: 'pending',
+      createdAt: new Date(),
     });
 
-    const loyverseOrderData = {
-      store_id: store_id,
-      receipt_type: 'SALE',
-      receipt_date: new Date().toISOString(),
-      total_money: cartTotal,
-      line_items: receiptLines,
-      payments: [
-        {
-          payment_type_id: payment_type_id,
-          money: cartTotal
-        }
-      ],
-      note: `Web Order Placed at ${new Date().toLocaleTimeString()}`
-    };
-
-    console.log("Sending order to Loyverse:", JSON.stringify(loyverseOrderData, null, 2));
-
-    // Send the order to Loyverse
-    const loyverseResponse = await fetch('https://api.loyverse.com/v1.0/receipts', {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(loyverseOrderData)
-    });
-
-    if (!loyverseResponse.ok) {
-        const errorData = await loyverseResponse.text();
-        console.error("Loyverse API Error:", loyverseResponse.status, errorData);
-        // Note: We don't expose full API error to client for security
-        throw new Error(`Loyverse API responded with status ${loyverseResponse.status}`);
-    }
-
-    const responseData = await loyverseResponse.json();
+    console.log(`Order ${orderId} saved to database for counter review.`);
 
     return new Response(JSON.stringify({ 
         success: true, 
         message: 'Order successfully sent to POS',
-        receipt_id: responseData.receipts?.[0]?.receipt_number || 'UNKNOWN'
+        receipt_id: orderId
     }), {
       status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
 
   } catch (error) {
     console.error('Checkout API Error:', error);
     return new Response(JSON.stringify({ error: 'Failed to process order' }), {
       status: 500,
-      headers: {
-        'Content-Type': 'application/json'
-      }
+      headers: { 'Content-Type': 'application/json' }
     });
   }
 };
