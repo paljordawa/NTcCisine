@@ -16,6 +16,8 @@ interface Order {
 
 export default function CounterDashboard() {
     const [orders, setOrders] = useState<Order[]>([]);
+    const [history, setHistory] = useState<Order[]>([]);
+    const [activeTab, setActiveTab] = useState<'live' | 'history'>('live');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -25,6 +27,7 @@ export default function CounterDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setOrders(data.orders);
+                setHistory(data.history || []);
             } else {
                 setError('Failed to load orders');
             }
@@ -116,13 +119,30 @@ export default function CounterDashboard() {
 
     return (
         <div className="max-w-6xl mx-auto">
-            <div className="flex justify-between items-center mb-10">
+            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
                 <h1 className="text-4xl font-bold text-white tracking-tight">
-                    Loyverse <span className="text-amber-500">Live Orders</span>
+                    Loyverse <span className="text-amber-500">Orders</span>
                 </h1>
+                
+                <div className="flex bg-gray-900 p-1 rounded-lg border border-gray-800">
+                    <button 
+                        onClick={() => setActiveTab('live')}
+                        className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'live' ? 'bg-amber-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        Live
+                        {orders.length > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'live' ? 'bg-gray-900 text-amber-500' : 'bg-red-500 text-white'}`}>{orders.length}</span>}
+                    </button>
+                    <button 
+                        onClick={() => setActiveTab('history')}
+                        className={`px-6 py-2 rounded-md font-bold transition-all ${activeTab === 'history' ? 'bg-amber-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                    >
+                        History
+                    </button>
+                </div>
+
                 <div className="flex items-center gap-2 text-gray-400 bg-gray-900 border border-gray-800 px-4 py-2 rounded-full shadow-lg">
                     <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
-                    Live Sync active
+                    Live Sync
                 </div>
             </div>
 
@@ -133,15 +153,25 @@ export default function CounterDashboard() {
                 </div>
             )}
 
-            {orders.length === 0 ? (
+            {activeTab === 'live' && orders.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-32 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
                     <Clock size={64} className="text-gray-600 mb-4" />
                     <p className="text-2xl text-gray-400 font-medium">No pending orders</p>
                     <p className="text-gray-500 mt-2">New web orders will appear here automatically.</p>
                 </div>
-            ) : (
+            )}
+            
+            {activeTab === 'history' && history.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-32 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
+                    <Check size={64} className="text-gray-600 mb-4" />
+                    <p className="text-2xl text-gray-400 font-medium">No history</p>
+                    <p className="text-gray-500 mt-2">Processed orders will appear here.</p>
+                </div>
+            )}
+
+            {((activeTab === 'live' && orders.length > 0) || (activeTab === 'history' && history.length > 0)) && (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {orders.map((order: any) => {
+                    {(activeTab === 'live' ? orders : history).map((order: any) => {
                         const items: CartItem[] = typeof order.cartItems === 'string' ? JSON.parse(order.cartItems) : order.cartItems;
                         const orderDate = new Date(order.createdAt);
                         const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -171,13 +201,15 @@ export default function CounterDashboard() {
                                                     </span>
                                                     <span className="text-gray-200 text-lg leading-tight pt-0.5">{cartItem.item.name}</span>
                                                 </div>
-                                                <button 
-                                                    onClick={() => handleRemoveItem(order.id, idx)} 
-                                                    className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all p-1.5 bg-gray-800 hover:bg-red-900/30 rounded-lg ml-2" 
-                                                    title="Mark unavailable & remove"
-                                                >
-                                                    <Trash2 size={16} />
-                                                </button>
+                                                {activeTab === 'live' && (
+                                                    <button 
+                                                        onClick={() => handleRemoveItem(order.id, idx)} 
+                                                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all p-1.5 bg-gray-800 hover:bg-red-900/30 rounded-lg ml-2" 
+                                                        title="Mark unavailable & remove"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
                                             </div>
                                         ))}
                                     </div>
@@ -190,21 +222,42 @@ export default function CounterDashboard() {
                                     </div>
                                 </div>
                                 
-                                <div className="p-4 bg-gray-800/50 flex gap-3 border-t border-gray-800">
-                                    <button 
-                                        onClick={() => handleAction(order.id, 'reject')}
-                                        className="flex-1 py-3 px-4 bg-gray-800 hover:bg-red-600/90 text-gray-300 hover:text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 border border-gray-700 hover:border-red-500"
-                                    >
-                                        <X size={20} />
-                                        Reject
-                                    </button>
-                                    <button 
-                                        onClick={() => handleAction(order.id, 'accept')}
-                                        className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${items.length === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 transform hover:scale-105'}`}
-                                    >
-                                        <Check size={20} />
-                                        {items.length === 0 ? 'Empty Ticket' : 'Accept & POS'}
-                                    </button>
+                                <div className={`p-4 bg-gray-800/50 flex gap-3 border-t border-gray-800 ${activeTab === 'history' ? 'justify-between items-center' : ''}`}>
+                                    {activeTab === 'live' ? (
+                                        <>
+                                            <button 
+                                                onClick={() => handleAction(order.id, 'reject')}
+                                                className="flex-1 py-3 px-4 bg-gray-800 hover:bg-red-600/90 text-gray-300 hover:text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 border border-gray-700 hover:border-red-500"
+                                            >
+                                                <X size={20} />
+                                                Reject
+                                            </button>
+                                            <button 
+                                                onClick={() => handleAction(order.id, 'accept')}
+                                                className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${items.length === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 transform hover:scale-105'}`}
+                                            >
+                                                <Check size={20} />
+                                                {items.length === 0 ? 'Empty Ticket' : 'Accept & POS'}
+                                            </button>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <span className="text-gray-400 text-sm font-medium pr-2 border-r border-gray-700 uppercase tracking-widest">
+                                                Status
+                                            </span>
+                                            <div className="flex-1 flex justify-end">
+                                                {order.status === 'accepted' ? (
+                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full font-bold">
+                                                        <Check size={16} /> Accepted
+                                                    </span>
+                                                ) : (
+                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full font-bold">
+                                                        <X size={16} /> Rejected
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </>
+                                    )}
                                 </div>
                             </div>
                         );
