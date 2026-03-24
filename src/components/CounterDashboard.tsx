@@ -48,13 +48,13 @@ export default function CounterDashboard() {
     const handleRemoveItem = (orderId: string, itemIdx: number) => {
         setOrders(prev => prev.map(order => {
             if (order.id !== orderId) return order;
-            
-            const currentItems: CartItem[] = typeof order.cartItems === 'string' 
-                ? JSON.parse(order.cartItems) 
+
+            const currentItems: CartItem[] = typeof order.cartItems === 'string'
+                ? JSON.parse(order.cartItems)
                 : order.cartItems;
-            
+
             const newItems = currentItems.filter((_, idx) => idx !== itemIdx);
-            
+
             // Calculate new total
             const newTotal = newItems.reduce((sum, cartItem) => {
                 const priceMatch = String(cartItem.item.price).replace(/[^0-9.]/g, '');
@@ -94,8 +94,8 @@ export default function CounterDashboard() {
             const res = await fetch('/api/fulfill', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    orderId, 
+                body: JSON.stringify({
+                    orderId,
                     action,
                     modifiedCartItems: order.cartItems,
                     modifiedCartTotal: order.cartTotal
@@ -121,18 +121,18 @@ export default function CounterDashboard() {
         <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
                 <h1 className="text-4xl font-bold text-white tracking-tight">
-                    Loyverse <span className="text-amber-500">Orders</span>
+                    Nomade Cuisine <span className="text-amber-500">Orders</span>
                 </h1>
-                
+
                 <div className="flex bg-gray-900 p-1 rounded-lg border border-gray-800">
-                    <button 
+                    <button
                         onClick={() => setActiveTab('live')}
                         className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'live' ? 'bg-amber-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
                     >
                         Live
                         {orders.length > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'live' ? 'bg-gray-900 text-amber-500' : 'bg-red-500 text-white'}`}>{orders.length}</span>}
                     </button>
-                    <button 
+                    <button
                         onClick={() => setActiveTab('history')}
                         className={`px-6 py-2 rounded-md font-bold transition-all ${activeTab === 'history' ? 'bg-amber-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
                     >
@@ -160,7 +160,7 @@ export default function CounterDashboard() {
                     <p className="text-gray-500 mt-2">New web orders will appear here automatically.</p>
                 </div>
             )}
-            
+
             {activeTab === 'history' && history.length === 0 && (
                 <div className="flex flex-col items-center justify-center py-32 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
                     <Check size={64} className="text-gray-600 mb-4" />
@@ -175,7 +175,7 @@ export default function CounterDashboard() {
                         const items: CartItem[] = typeof order.cartItems === 'string' ? JSON.parse(order.cartItems) : order.cartItems;
                         const orderDate = new Date(order.createdAt);
                         const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        
+
                         return (
                             <div key={order.id} className="bg-gray-900 border border-amber-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col transform transition-transform duration-300 hover:-translate-y-1">
                                 <div className="bg-gradient-to-r from-amber-600 to-amber-500 p-4 text-white flex justify-between items-center">
@@ -187,7 +187,7 @@ export default function CounterDashboard() {
                                         # {order.id.slice(0, 6).toUpperCase()}
                                     </div>
                                 </div>
-                                
+
                                 <div className="p-6 flex-grow">
                                     <div className="space-y-3 mb-6 min-h-[100px]">
                                         {items.length === 0 && (
@@ -202,9 +202,9 @@ export default function CounterDashboard() {
                                                     <span className="text-gray-200 text-lg leading-tight pt-0.5">{cartItem.item.name}</span>
                                                 </div>
                                                 {activeTab === 'live' && (
-                                                    <button 
-                                                        onClick={() => handleRemoveItem(order.id, idx)} 
-                                                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all p-1.5 bg-gray-800 hover:bg-red-900/30 rounded-lg ml-2" 
+                                                    <button
+                                                        onClick={() => handleRemoveItem(order.id, idx)}
+                                                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all p-1.5 bg-gray-800 hover:bg-red-900/30 rounded-lg ml-2"
                                                         title="Mark unavailable & remove"
                                                     >
                                                         <Trash2 size={16} />
@@ -213,7 +213,7 @@ export default function CounterDashboard() {
                                             </div>
                                         ))}
                                     </div>
-                                    
+
                                     <div className="flex justify-between items-end border-t border-gray-800 pt-4 mt-auto">
                                         <span className="text-gray-400 uppercase tracking-wider text-sm font-bold">Total</span>
                                         <span className={`text-2xl font-bold ${items.length === 0 ? 'text-gray-600 line-through' : 'text-amber-500'}`}>
@@ -221,18 +221,18 @@ export default function CounterDashboard() {
                                         </span>
                                     </div>
                                 </div>
-                                
+
                                 <div className={`p-4 bg-gray-800/50 flex gap-3 border-t border-gray-800 ${activeTab === 'history' ? 'justify-between items-center' : ''}`}>
                                     {activeTab === 'live' ? (
                                         <>
-                                            <button 
+                                            <button
                                                 onClick={() => handleAction(order.id, 'reject')}
                                                 className="flex-1 py-3 px-4 bg-gray-800 hover:bg-red-600/90 text-gray-300 hover:text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 border border-gray-700 hover:border-red-500"
                                             >
                                                 <X size={20} />
                                                 Reject
                                             </button>
-                                            <button 
+                                            <button
                                                 onClick={() => handleAction(order.id, 'accept')}
                                                 className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${items.length === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 transform hover:scale-105'}`}
                                             >
