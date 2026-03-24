@@ -65,5 +65,10 @@ To add or modify menu items, edit the `menuData` object located at the top of `s
 ### Changing Background Images
 The hero and pattern images are controlled in `src/pages/index.astro`. Replace the files in the `public/` folder and update the filenames in the `.astro` file if necessary.
 
+### POS Integration (Loyverse)
+The application is set up to automatically send web orders to **Loyverse POS**.
+*   **Documentation:** [Loyverse Developer API](https://developer.loyverse.com/docs/)
+*   **Setup:** You must generate an Access Token from your Loyverse Back Office and save it in a `.env` file at the root of this project as `LOYVERSE_ACCESS_TOKEN=your_token_here`.
+
 ---
 *Built with ❤️ for Nomade Tibetan Cuisine.*

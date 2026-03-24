@@ -18,6 +18,8 @@ export default function Menu({ initialData }: MenuProps) {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitMessage, setSubmitMessage] = useState<{type: 'success' | 'error', text: string} | null>(null);
 
     const addToCart = (item: MenuItem) => {
         setCartItems(prev => {
@@ -53,6 +55,44 @@ export default function Menu({ initialData }: MenuProps) {
         const newMain = initialData.find(c => c.id === id);
         if (newMain && newMain.subCategories.length > 0) {
             setActiveSubId(newMain.subCategories[0].id);
+        }
+    };
+
+    const handleCheckout = async () => {
+        if (cartItems.length === 0) return;
+        setIsSubmitting(true);
+        setSubmitMessage(null);
+
+        try {
+            const response = await fetch('/api/checkout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ 
+                    cartItems,
+                    cartTotal
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                setSubmitMessage({ type: 'success', text: `Order sent! Ticket: ${data.receipt_id || 'N/A'}` });
+                // Clear cart after successful checkout
+                setTimeout(() => {
+                    setCartItems([]);
+                    setIsCartOpen(false);
+                    setSubmitMessage(null);
+                }, 3000);
+            } else {
+                setSubmitMessage({ type: 'error', text: data.error || 'Failed to send order' });
+            }
+        } catch (error) {
+            console.error('Checkout error:', error);
+            setSubmitMessage({ type: 'error', text: 'Network error occurred.' });
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -319,8 +359,23 @@ export default function Menu({ initialData }: MenuProps) {
                                             <span className="text-gray-400 text-lg">Total</span>
                                             <span className="text-3xl font-bold text-amber-500">${cartTotal.toFixed(2)}</span>
                                         </div>
-                                        <button className="w-full py-4 bg-amber-600 hover:bg-amber-700 text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-amber-900/20 transition-all transform hover:-translate-y-1">
-                                            Checkout
+                                        
+                                        {submitMessage && (
+                                            <div className={`p-3 rounded-lg mb-4 text-center text-sm font-medium ${submitMessage.type === 'success' ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-red-500/20 text-red-400 border border-red-500/30'}`}>
+                                                {submitMessage.text}
+                                            </div>
+                                        )}
+
+                                        <button 
+                                            onClick={handleCheckout}
+                                            disabled={isSubmitting || cartItems.length === 0}
+                                            className="w-full py-4 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:transform-none disabled:shadow-none text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-amber-900/20 transition-all transform hover:-translate-y-1 flex justify-center items-center"
+                                        >
+                                            {isSubmitting ? (
+                                                <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                            ) : (
+                                                'Send to Counter'
+                                            )}
                                         </button>
                                     </div>
                                 </>

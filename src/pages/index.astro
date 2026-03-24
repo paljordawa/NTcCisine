@@ -2,9 +2,9 @@
 import Layout from "../layouts/Layout.astro";
 import Menu from "../components/Menu";
 
-// In the future, this is where you will fetch data from your Headless CMS
-// e.g., const menuData = await sanityClient.fetch('*[_type == "category"]')
-import { menuData } from "../data/menu";
+import { fetchMenuData } from "../lib/loyverse";
+const menuData = await fetchMenuData();
+
 ---
 
 <Layout>
