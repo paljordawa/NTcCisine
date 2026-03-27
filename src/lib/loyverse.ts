@@ -60,21 +60,30 @@ export async function fetchMenuData(): Promise<MainCategory[]> {
 
       // Format Items
       const menuItems: MenuItem[] = rawItems.map(item => {
-        const variant = item.variants?.[0] || {};
-        const variantId = variant.variant_id || item.id;
-        // Loyverse prices are often stored as standard numbers (e.g. 150 -> maybe 1.50 or just exact 150)
-        // Adjust this depending on your currency logic. Assuming exact numeric values for now.
-        const defaultPrice = variant.default_price || variant.stores?.[0]?.price || 0;
+        const variantsData = item.variants || [];
         
+        const variants = variantsData.map((v: any) => {
+          const opts = [v.option1_value, v.option2_value, v.option3_value].filter(Boolean);
+          const name = opts.length > 0 ? opts.join(' / ') : 'Standard';
+          const priceVal = v.default_price ?? v.stores?.[0]?.price ?? 0;
+          return {
+            variant_id: v.variant_id || item.id,
+            name,
+            price: `CHF ${Number(priceVal).toFixed(2)}`
+          };
+        });
+
+        const displayPrice = variants.length > 0 ? variants[0].price : "CHF 0.00";
+
         return {
-          id: variantId, // React key
+          id: item.id, // React key
           item_id: item.id,
-          variant_id: variantId,
           name: item.item_name,
           description: (item.description || '').replace(/<[^>]*>?/gm, ''),
-          price: `CHF ${Number(defaultPrice).toFixed(2)}`, // Adjust symbol as needed
+          price: displayPrice,
           image: item.image_url || 'https://placehold.co/400x300?text=' + encodeURIComponent(item.item_name),
-          tags: [] // Loyverse doesn't have default tags, but we could parse them from descriptions if needed
+          tags: [],
+          variants
         };
       });
 

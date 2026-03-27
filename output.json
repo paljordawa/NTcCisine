@@ -1,0 +1,18 @@
+[
+  {
+    "id": "865b8205-5336-4a10-a0eb-97f6b0b489ac",
+    "cartItems": [
+      {
+        "item": {
+          "name": "Test Token",
+          "price": "CHF 10.00",
+          "id": "001"
+        },
+        "quantity": 2
+      }
+    ],
+    "cartTotal": 20,
+    "status": "pending",
+    "createdAt": "2026-03-27T16:25:38.087Z"
+  }
+]

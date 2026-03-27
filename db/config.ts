@@ -7,6 +7,7 @@ const Order = defineTable({
     cartTotal: column.number(),
     status: column.text({ default: 'pending' }), // 'pending', 'accepted', 'rejected'
     createdAt: column.date(),
+    tableNumber: column.text({ optional: true }),
   }
 });
 

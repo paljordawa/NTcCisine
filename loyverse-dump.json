@@ -1,0 +1,652 @@
+{
+  "multiVariant": [
+    {
+      "id": "6e0b4285-a331-41ac-89f8-1bbcfe3e9d97",
+      "handle": "nouilles-sautees",
+      "reference_id": null,
+      "item_name": "NOUILLES SAUTÉES",
+      "description": "BOEUF/POULET\nAvec des légumes frais",
+      "track_stock": false,
+      "sold_by_weight": false,
+      "is_composite": false,
+      "use_production": false,
+      "category_id": "55ce0636-4bff-410b-8d96-a5b6ada78241",
+      "components": [],
+      "primary_supplier_id": null,
+      "tax_ids": [],
+      "modifier_ids": [],
+      "form": "SQUARE",
+      "color": "GREY",
+      "image_url": null,
+      "option1_name": "Type",
+      "option2_name": null,
+      "option3_name": null,
+      "created_at": "2026-03-26T16:58:25.000Z",
+      "updated_at": "2026-03-26T16:58:25.000Z",
+      "deleted_at": null,
+      "variants": [
+        {
+          "variant_id": "84a0febc-5cdd-45e6-b266-bf6404a20a68",
+          "item_id": "6e0b4285-a331-41ac-89f8-1bbcfe3e9d97",
+          "sku": "10034",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf/Poulet",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 22,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 22,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "cf961046-cb13-4e54-b325-b755357544b1",
+          "item_id": "6e0b4285-a331-41ac-89f8-1bbcfe3e9d97",
+          "sku": "10035",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 20,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 20,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        }
+      ]
+    },
+    {
+      "id": "85f772d5-8e64-4c0a-92f5-2ea9587f5851",
+      "handle": "mokthuk",
+      "reference_id": null,
+      "item_name": "MOKTHUK",
+      "description": "<p>Bouillon maison au b&oelig;uf avec des l&eacute;gumes frais</p>",
+      "track_stock": false,
+      "sold_by_weight": false,
+      "is_composite": false,
+      "use_production": false,
+      "category_id": "55ce0636-4bff-410b-8d96-a5b6ada78241",
+      "components": [],
+      "primary_supplier_id": null,
+      "tax_ids": [],
+      "modifier_ids": [],
+      "form": "SQUARE",
+      "color": "PINK",
+      "image_url": null,
+      "option1_name": "Type",
+      "option2_name": null,
+      "option3_name": null,
+      "created_at": "2026-03-26T16:58:25.000Z",
+      "updated_at": "2026-03-26T17:34:39.000Z",
+      "deleted_at": null,
+      "variants": [
+        {
+          "variant_id": "bbfd55c3-07bd-4e2c-95a5-81f1213ac035",
+          "item_id": "85f772d5-8e64-4c0a-92f5-2ea9587f5851",
+          "sku": "10032",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 22,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 22,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T17:34:39.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "40d6c09b-c9a9-40ae-b316-0918cd105bb8",
+          "item_id": "85f772d5-8e64-4c0a-92f5-2ea9587f5851",
+          "sku": "10033",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 20,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 20,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T17:34:39.000Z",
+          "deleted_at": null
+        }
+      ]
+    },
+    {
+      "id": "615f1350-dda0-4d13-9e8d-3ec99d22deb9",
+      "handle": "nomade-thukpa",
+      "reference_id": null,
+      "item_name": "NOMADE THUKPA",
+      "description": "Bouillon maison au morceaux de boeuf avec nouilles et légumes frais",
+      "track_stock": false,
+      "sold_by_weight": false,
+      "is_composite": false,
+      "use_production": false,
+      "category_id": "55ce0636-4bff-410b-8d96-a5b6ada78241",
+      "components": [],
+      "primary_supplier_id": null,
+      "tax_ids": [],
+      "modifier_ids": [],
+      "form": "SQUARE",
+      "color": "GREY",
+      "image_url": null,
+      "option1_name": "Type",
+      "option2_name": null,
+      "option3_name": null,
+      "created_at": "2026-03-26T16:58:25.000Z",
+      "updated_at": "2026-03-26T16:58:25.000Z",
+      "deleted_at": null,
+      "variants": [
+        {
+          "variant_id": "36c63979-d01f-41d8-a50f-d1b1b5d4ef76",
+          "item_id": "615f1350-dda0-4d13-9e8d-3ec99d22deb9",
+          "sku": "10030",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 24,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 24,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "c5313064-6521-4bcf-9fd1-908995718633",
+          "item_id": "615f1350-dda0-4d13-9e8d-3ec99d22deb9",
+          "sku": "10031",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 22,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 22,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        }
+      ]
+    },
+    {
+      "id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+      "handle": "momo-pieces",
+      "reference_id": null,
+      "item_name": "MOMO",
+      "description": "6/8 PIÈCES\nÀ base de boeuf haché et oignons verts frais",
+      "track_stock": false,
+      "sold_by_weight": false,
+      "is_composite": false,
+      "use_production": false,
+      "category_id": "55ce0636-4bff-410b-8d96-a5b6ada78241",
+      "components": [],
+      "primary_supplier_id": null,
+      "tax_ids": [],
+      "modifier_ids": [],
+      "form": "SQUARE",
+      "color": "GREY",
+      "image_url": null,
+      "option1_name": "Type",
+      "option2_name": "Portion",
+      "option3_name": null,
+      "created_at": "2026-03-26T16:58:25.000Z",
+      "updated_at": "2026-03-26T16:58:25.000Z",
+      "deleted_at": null,
+      "variants": [
+        {
+          "variant_id": "c04fa197-bddf-4da7-b096-f963a8a7ac2e",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10025",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf",
+          "option2_value": "6 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 18,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 18,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "9769a650-4a4d-4c2f-bb56-c635669a7e7c",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10045",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf",
+          "option2_value": "8 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 24,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 24,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "a499f69c-711f-451c-92c3-5642fe362652",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10026",
+          "reference_variant_id": null,
+          "option1_value": "Poulet",
+          "option2_value": "6 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 20,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 20,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "8afda69a-0675-4652-a23b-0dca92fe0be5",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10046",
+          "reference_variant_id": null,
+          "option1_value": "Poulet",
+          "option2_value": "8 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 25,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 25,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "6515ca2c-f8bf-4ef8-8e41-ff6040733697",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10027",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": "6 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 15,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 15,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "eda2d8b1-106a-40cb-94b7-045f52dbe7f6",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10047",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": "8 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 20,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 20,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "941fc088-7a59-400a-b084-8596fe15895c",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10028",
+          "reference_variant_id": null,
+          "option1_value": "Végane",
+          "option2_value": "6 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 18,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 18,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "facd519c-f678-49ea-9d53-c5c86db88463",
+          "item_id": "468691e2-3a2e-4ac3-a0f6-75d96659b6a1",
+          "sku": "10048",
+          "reference_variant_id": null,
+          "option1_value": "Végane",
+          "option2_value": "8 PIÈCES",
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 24,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 24,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        }
+      ]
+    },
+    {
+      "id": "bf63d260-11ed-4e0b-ae67-f812c272f7a5",
+      "handle": "thenthuk",
+      "reference_id": null,
+      "item_name": "THENTHUK",
+      "description": "PÂTES CARRÉES\nBouillon maison au boeuf avec légumes frais",
+      "track_stock": false,
+      "sold_by_weight": false,
+      "is_composite": false,
+      "use_production": false,
+      "category_id": "55ce0636-4bff-410b-8d96-a5b6ada78241",
+      "components": [],
+      "primary_supplier_id": null,
+      "tax_ids": [],
+      "modifier_ids": [],
+      "form": "SQUARE",
+      "color": "GREY",
+      "image_url": null,
+      "option1_name": "Type",
+      "option2_name": null,
+      "option3_name": null,
+      "created_at": "2026-03-26T16:58:25.000Z",
+      "updated_at": "2026-03-26T16:58:25.000Z",
+      "deleted_at": null,
+      "variants": [
+        {
+          "variant_id": "1b7d35a0-9162-491e-b16d-c38617a5fd99",
+          "item_id": "bf63d260-11ed-4e0b-ae67-f812c272f7a5",
+          "sku": "10022",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 22,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 22,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "605f3554-1586-45be-a893-ee2cc2546539",
+          "item_id": "bf63d260-11ed-4e0b-ae67-f812c272f7a5",
+          "sku": "10023",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 22,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 22,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        }
+      ]
+    },
+    {
+      "id": "293ae217-0784-4868-9164-457df9ea6574",
+      "handle": "momo-curry",
+      "reference_id": null,
+      "item_name": "MOMO CURRY",
+      "description": "Raviolis tibétains cuits à la vapeur avec arce boeuf haché avec\n épinards dans un curry doux à la tomate et lait de coco. Pain plat feuilleté",
+      "track_stock": false,
+      "sold_by_weight": false,
+      "is_composite": false,
+      "use_production": false,
+      "category_id": "55ce0636-4bff-410b-8d96-a5b6ada78241",
+      "components": [],
+      "primary_supplier_id": null,
+      "tax_ids": [],
+      "modifier_ids": [],
+      "form": "SQUARE",
+      "color": "GREY",
+      "image_url": null,
+      "option1_name": "Type",
+      "option2_name": null,
+      "option3_name": null,
+      "created_at": "2026-03-26T16:58:25.000Z",
+      "updated_at": "2026-03-26T16:58:25.000Z",
+      "deleted_at": null,
+      "variants": [
+        {
+          "variant_id": "213e5bb1-b7c8-4646-b416-1bce9a29acb3",
+          "item_id": "293ae217-0784-4868-9164-457df9ea6574",
+          "sku": "10020",
+          "reference_variant_id": null,
+          "option1_value": "Boeuf",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 26,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 26,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        },
+        {
+          "variant_id": "7fb57635-6a68-432f-a25a-a4d9645e2af6",
+          "item_id": "293ae217-0784-4868-9164-457df9ea6574",
+          "sku": "10021",
+          "reference_variant_id": null,
+          "option1_value": "Végé",
+          "option2_value": null,
+          "option3_value": null,
+          "barcode": null,
+          "cost": 0,
+          "purchase_cost": null,
+          "default_pricing_type": "FIXED",
+          "default_price": 24,
+          "stores": [
+            {
+              "store_id": "636db01c-315d-43fa-ab2d-15d4f4beb171",
+              "pricing_type": "FIXED",
+              "price": 24,
+              "available_for_sale": true,
+              "optimal_stock": null,
+              "low_stock": null
+            }
+          ],
+          "created_at": "2026-03-26T16:58:25.000Z",
+          "updated_at": "2026-03-26T16:58:25.000Z",
+          "deleted_at": null
+        }
+      ]
+    }
+  ]
+}

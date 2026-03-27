@@ -12,6 +12,7 @@ interface Order {
     cartTotal: number;
     status: string;
     createdAt: string;
+    tableNumber?: string | null;
 }
 
 export default function CounterDashboard() {
@@ -121,20 +122,20 @@ export default function CounterDashboard() {
         <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
                 <h1 className="text-4xl font-bold text-white tracking-tight">
-                    Nomade Cuisine <span className="text-amber-500">Orders</span>
+                    Nomade Cuisine <span className="text-emerald-500">Orders</span>
                 </h1>
 
                 <div className="flex bg-gray-900 p-1 rounded-lg border border-gray-800">
                     <button
                         onClick={() => setActiveTab('live')}
-                        className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'live' ? 'bg-amber-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'live' ? 'bg-emerald-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
                     >
                         Live
-                        {orders.length > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'live' ? 'bg-gray-900 text-amber-500' : 'bg-red-500 text-white'}`}>{orders.length}</span>}
+                        {orders.length > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'live' ? 'bg-gray-900 text-emerald-500' : 'bg-red-500 text-white'}`}>{orders.length}</span>}
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`px-6 py-2 rounded-md font-bold transition-all ${activeTab === 'history' ? 'bg-amber-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-md font-bold transition-all ${activeTab === 'history' ? 'bg-emerald-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
                     >
                         History
                     </button>
@@ -177,11 +178,16 @@ export default function CounterDashboard() {
                         const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                         return (
-                            <div key={order.id} className="bg-gray-900 border border-amber-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col transform transition-transform duration-300 hover:-translate-y-1">
-                                <div className="bg-gradient-to-r from-amber-600 to-amber-500 p-4 text-white flex justify-between items-center">
+                            <div key={order.id} className="bg-gray-900 border border-emerald-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col transform transition-transform duration-300 hover:-translate-y-1">
+                                <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-4 text-white flex justify-between items-center">
                                     <div className="flex items-center gap-2 font-bold text-lg">
                                         <Clock size={18} />
                                         {timeString}
+                                        {order.tableNumber && (
+                                            <span className="ml-2 bg-white/20 px-2.5 py-0.5 rounded-full text-sm flex items-center shadow-inner">
+                                                Table {order.tableNumber}
+                                            </span>
+                                        )}
                                     </div>
                                     <div className="font-mono bg-black/20 px-2 py-1 rounded text-sm tracking-wider">
                                         # {order.id.slice(0, 6).toUpperCase()}
@@ -216,7 +222,7 @@ export default function CounterDashboard() {
 
                                     <div className="flex justify-between items-end border-t border-gray-800 pt-4 mt-auto">
                                         <span className="text-gray-400 uppercase tracking-wider text-sm font-bold">Total</span>
-                                        <span className={`text-2xl font-bold ${items.length === 0 ? 'text-gray-600 line-through' : 'text-amber-500'}`}>
+                                        <span className={`text-2xl font-bold ${items.length === 0 ? 'text-gray-600 line-through' : 'text-emerald-500'}`}>
                                             CHF {order.cartTotal.toFixed(2)}
                                         </span>
                                     </div>

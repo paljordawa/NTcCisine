@@ -20,6 +20,7 @@ export default function Menu({ initialData }: MenuProps) {
     const [isCartOpen, setIsCartOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
+    const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
 
     const addToCart = (item: MenuItem) => {
         setCartItems(prev => {
@@ -29,6 +30,30 @@ export default function Menu({ initialData }: MenuProps) {
             }
             return [...prev, { item, quantity: 1 }];
         });
+    };
+
+    const handleAddToCart = (item: MenuItem) => {
+        if (item.variants && item.variants.length > 1) {
+            const selectedVarId = selectedVariants[item.id] || item.variants[0].variant_id;
+            const variantInfo = item.variants.find(v => v.variant_id === selectedVarId) || item.variants[0];
+            const itemToAdd: MenuItem = {
+                ...item,
+                id: selectedVarId,
+                variant_id: selectedVarId,
+                name: `${item.name} - ${variantInfo.name}`,
+                price: variantInfo.price
+            };
+            addToCart(itemToAdd);
+        } else {
+            const variantInfo = item.variants?.[0];
+            const itemToAdd: MenuItem = {
+                ...item,
+                id: variantInfo?.variant_id || item.id,
+                variant_id: variantInfo?.variant_id || item.id,
+                price: variantInfo?.price || item.price 
+            };
+            addToCart(itemToAdd);
+        }
     };
 
     const updateQuantity = (itemId: string, delta: number) => {
@@ -62,6 +87,10 @@ export default function Menu({ initialData }: MenuProps) {
         if (cartItems.length === 0) return;
         setIsSubmitting(true);
         setSubmitMessage(null);
+        
+        // Extract table number from URL
+        const params = new URLSearchParams(window.location.search);
+        const tableNumber = params.get('table');
 
         try {
             const response = await fetch('/api/checkout', {
@@ -71,7 +100,8 @@ export default function Menu({ initialData }: MenuProps) {
                 },
                 body: JSON.stringify({
                     cartItems,
-                    cartTotal
+                    cartTotal,
+                    tableNumber
                 }),
             });
 
@@ -104,13 +134,13 @@ export default function Menu({ initialData }: MenuProps) {
             {/* Cart Floating Button - Top Right */}
             <button
                 onClick={() => setIsCartOpen(true)}
-                className="fixed top-4 right-4 z-50 p-3 bg-amber-600 text-white rounded-full shadow-lg hover:bg-amber-700 transition-all duration-300 hover:scale-110 border-2 border-amber-500/50"
+                className="fixed top-4 right-4 z-50 p-3 bg-emerald-600 text-white rounded-full shadow-lg hover:bg-emerald-700 transition-all duration-300 hover:scale-110 border-2 border-emerald-500/50"
                 aria-label="Open Cart"
             >
                 <div className="relative">
                     <ConciergeBell size={24} />
                     {cartItems.length > 0 && (
-                        <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-900">
+                        <span className="absolute -top-2 -right-2 bg-emerald-700 text-white text-[10px] font-bold w-5 h-5 flex items-center justify-center rounded-full border border-gray-900">
                             {cartItems.reduce((a, b) => a + b.quantity, 0)}
                         </span>
                     )}
@@ -121,14 +151,14 @@ export default function Menu({ initialData }: MenuProps) {
             <div className="absolute top-4 left-4 sm:top-12 sm:left-8 z-10 flex bg-gray-900/80 backdrop-blur-md rounded-lg p-1 border border-gray-800">
                 <button
                     onClick={() => setViewMode('grid')}
-                    className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                    className={`p-2 rounded-md transition-all ${viewMode === 'grid' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
                     aria-label="Grid View"
                 >
                     <LayoutGrid size={20} />
                 </button>
                 <button
                     onClick={() => setViewMode('list')}
-                    className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-amber-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
+                    className={`p-2 rounded-md transition-all ${viewMode === 'list' ? 'bg-emerald-600 text-white shadow-lg' : 'text-gray-400 hover:text-white'}`}
                     aria-label="List View"
                 >
                     <List size={20} />
@@ -144,7 +174,7 @@ export default function Menu({ initialData }: MenuProps) {
                             onClick={() => handleMainChange(category.id)}
                             className={`px-6 py-2 sm:px-8 sm:py-3 rounded-full text-sm sm:text-lg font-medium transition-all duration-300 whitespace-nowrap
                 ${activeMainId === category.id
-                                    ? 'bg-amber-600 text-white shadow-lg'
+                                    ? 'bg-emerald-600 text-white shadow-lg'
                                     : 'text-gray-400 hover:text-white hover:bg-gray-800'
                                 }`}
                         >
@@ -158,7 +188,7 @@ export default function Menu({ initialData }: MenuProps) {
             {/* <div className="flex flex-col items-center mb-12">
                 <h2 className="text-3xl font-bold text-white mb-6 tracking-tight relative inline-block">
                     {activeMainCategory.name}
-                    <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-amber-600 rounded-full"></span>
+                    <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-emerald-600 rounded-full"></span>
                 </h2>
                 <div className="flex flex-wrap justify-center gap-3">
                     {activeMainCategory.subCategories.map(sub => (
@@ -167,7 +197,7 @@ export default function Menu({ initialData }: MenuProps) {
                             onClick={() => setActiveSubId(sub.id)}
                             className={`px-5 py-2 rounded-xl text-sm font-medium transition-all duration-300 border
                 ${activeSubId === sub.id
-                                    ? 'bg-amber-500/10 border-amber-500 text-amber-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
+                                    ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 shadow-[0_0_15px_rgba(245,158,11,0.2)]'
                                     : 'bg-gray-900 border-gray-800 text-gray-400 hover:border-gray-600 hover:text-gray-200'
                                 }`}
                         >
@@ -182,38 +212,61 @@ export default function Menu({ initialData }: MenuProps) {
                 /* Grid View */
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
                     {activeSubCategory.items.map(item => (
-                        <div key={item.id} className="group relative bg-gray-900 rounded-xl md:rounded-2xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 flex flex-col h-full">
-                            <div className="relative h-40 md:h-48 lg:h-64 overflow-hidden">
+                        <div key={item.id} className="group relative bg-gray-900/40 backdrop-blur-sm rounded-[2rem] p-3 border border-white/5 hover:bg-gray-800/50 transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] flex flex-col h-full">
+                            <div className="relative w-full aspect-square md:aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4">
                                 <img
                                     src={item.image}
                                     alt={item.name}
                                     className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900 via-transparent to-transparent opacity-80"></div>
-
+                                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-transparent to-transparent"></div>
+                                {/* Price tag over the image */}
+                                <div className="absolute top-3 right-3 bg-emerald-700/90 backdrop-blur-md text-white text-[11px] md:text-xs font-bold px-3 py-1.5 rounded-full shadow-lg border border-white/20">
+                                    {item.variants && item.variants.length > 1 
+                                        ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price 
+                                        : item.price}
+                                </div>
                                 {/* Tags */}
-                                <div className="absolute top-3 left-3 md:top-4 md:left-4 flex flex-wrap gap-1.5 md:gap-2">
+                                <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
                                     {item.tags?.map(tag => (
-                                        <span key={tag} className="px-2 py-0.5 md:px-3 md:py-1 text-[10px] md:text-xs font-bold uppercase tracking-wider bg-black/70 backdrop-blur-md text-amber-400 rounded-md md:rounded-lg border border-amber-500/30">
+                                        <span key={tag} className="px-2 py-1 text-[9px] md:text-[10px] font-bold uppercase tracking-wider bg-white/10 backdrop-blur-md text-emerald-300 rounded-full border border-white/10">
                                             {tag}
                                         </span>
                                     ))}
                                 </div>
                             </div>
-
-                            <div className="p-4 md:p-6 flex-grow flex flex-col">
-                                <div className="flex flex-col md:flex-row justify-between items-start mb-2 md:mb-3 gap-1">
-                                    <h3 className="text-sm md:text-xl font-bold text-white group-hover:text-amber-500 transition-colors leading-tight">{item.name}</h3>
-                                    <span className="text-sm md:text-xl font-bold text-amber-500 tabular-nums">{item.price}</span>
+                            
+                            <div className="px-2 flex-grow flex flex-col">
+                                <div className="flex justify-between items-start mb-2">
+                                    <h3 className="text-sm md:text-lg font-bold text-white group-hover:text-emerald-400 transition-colors leading-tight">{item.name}</h3>
                                 </div>
-                                <p className="text-gray-400 text-xs md:text-sm leading-snug md:leading-relaxed mb-4 md:mb-6 flex-grow line-clamp-3 md:line-clamp-none">{item.description}</p>
+                                <p className="text-gray-400 text-xs md:text-sm leading-relaxed mb-4 flex-grow line-clamp-2">{item.description}</p>
+                                
+                                {item.variants && item.variants.length > 1 && (
+                                    <div className="mb-4 relative">
+                                        <select 
+                                            className="w-full bg-gray-800/80 text-white text-sm font-medium border border-emerald-500/30 rounded-xl pl-4 pr-10 py-2.5 outline-none appearance-none cursor-pointer hover:bg-gray-700 hover:border-emerald-400 transition-all shadow-sm"
+                                            value={selectedVariants[item.id] || item.variants[0].variant_id}
+                                            onChange={(e) => setSelectedVariants({...selectedVariants, [item.id]: e.target.value})}
+                                        >
+                                            {item.variants.map(v => (
+                                                <option key={v.variant_id} value={v.variant_id} className="bg-gray-900 text-white">
+                                                    {v.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-500">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                )}
 
                                 <button
-                                    onClick={() => addToCart(item)}
-                                    className="w-full py-2 md:py-3 bg-gray-800 hover:bg-amber-600 hover:text-white text-gray-300 rounded-lg md:rounded-xl transition-all duration-300 font-semibold text-xs md:text-sm flex items-center justify-center gap-1.5 md:gap-2 group-hover:bg-amber-600 group-hover:text-white"
+                                    onClick={() => handleAddToCart(item)}
+                                    className="w-full py-3 bg-white/5 hover:bg-emerald-600 text-white rounded-2xl transition-all duration-300 font-semibold text-sm flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.4)] mt-auto"
                                 >
-                                    <span>Add</span>
-                                    <ChevronRight className="w-3.5 h-3.5 md:w-4 md:h-4 transition-transform group-hover:translate-x-1" />
+                                    <Plus className="w-4 h-4" />
+                                    <span>Add to Order</span>
                                 </button>
                             </div>
                         </div>
@@ -223,47 +276,66 @@ export default function Menu({ initialData }: MenuProps) {
                 /* List View */
                 <div className="flex flex-col gap-4 max-w-4xl mx-auto">
                     {activeSubCategory.items.map(item => (
-                        <div key={item.id} className="group bg-gray-900 rounded-xl overflow-hidden border border-gray-800 hover:border-gray-700 transition-all duration-300 hover:shadow-xl flex flex-row h-32 md:h-40">
-                            <div className="relative w-32 md:w-48 overflow-hidden shrink-0">
+                        <div key={item.id} className="group bg-gray-900/40 backdrop-blur-sm rounded-3xl p-3 border border-white/5 hover:bg-gray-800/50 transition-all duration-500 hover:shadow-[0_8px_30px_rgb(0,0,0,0.5)] flex flex-row gap-4 md:gap-6 items-center">
+                            <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0">
                                 <img
                                     src={item.image}
                                     alt={item.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                 />
-                                <div className="absolute inset-0 bg-gradient-to-r from-transparent to-gray-900/50"></div>
-                            </div>
-
-                            <div className="p-4 md:p-6 flex-grow flex flex-col justify-between relative">
-                                <div className="absolute top-4 right-4 flex gap-2">
-                                    {item.tags?.map(tag => (
-                                        <span key={tag} className="hidden sm:inline-block px-2 py-0.5 text-xs font-bold uppercase tracking-wider bg-gray-800 text-amber-400 rounded-md border border-amber-500/30">
+                                <div className="absolute top-2 left-2 flex flex-col gap-1">
+                                    {item.tags?.slice(0, 1).map(tag => (
+                                        <span key={tag} className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-black/60 backdrop-blur-md text-emerald-300 rounded-full border border-white/10">
                                             {tag}
                                         </span>
                                     ))}
                                 </div>
-
-                                <div>
-                                    <div className="flex justify-between items-start pr-0 sm:pr-20">
-                                        <h3 className="text-lg md:text-xl font-bold text-white group-hover:text-amber-500 transition-colors">{item.name}</h3>
-                                        <span className="text-lg md:text-xl font-bold text-amber-500 tabular-nums">{item.price}</span>
-                                    </div>
-                                    <p className="text-gray-400 text-xs md:text-sm mt-1 md:mt-2 line-clamp-2">{item.description}</p>
+                            </div>
+                            
+                            <div className="flex-grow flex flex-col py-1 md:py-2 pr-2 md:pr-4">
+                                <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4 w-full">
+                                    <h3 className="text-sm md:text-lg font-bold text-white group-hover:text-emerald-400 transition-colors w-full md:w-auto">{item.name}</h3>
+                                    <span className="shrink-0 text-[11px] md:text-sm font-bold text-white tabular-nums bg-emerald-700/90 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-white/20 shadow-lg inline-block">
+                                        {item.variants && item.variants.length > 1 
+                                            ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price 
+                                            : item.price}
+                                    </span>
                                 </div>
+                                <p className="text-gray-400 text-xs md:text-sm leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
+                                
+                                {item.variants && item.variants.length > 1 && (
+                                    <div className="mb-3 w-full relative mt-1">
+                                        <select 
+                                            className="w-full bg-gray-800/80 text-white text-sm font-medium border border-emerald-500/30 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-gray-700 hover:border-emerald-400 transition-all shadow-sm"
+                                            value={selectedVariants[item.id] || item.variants[0].variant_id}
+                                            onChange={(e) => setSelectedVariants({...selectedVariants, [item.id]: e.target.value})}
+                                        >
+                                            {item.variants.map(v => (
+                                                <option key={v.variant_id} value={v.variant_id} className="bg-gray-900 text-white">
+                                                    {v.name}
+                                                </option>
+                                            ))}
+                                        </select>
+                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-emerald-500">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </div>
+                                    </div>
+                                )}
 
-                                <div className="flex justify-between items-end mt-2">
-                                    <div className="sm:hidden flex gap-1">
-                                        {item.tags?.map(tag => (
-                                            <span key={tag} className="px-1.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-gray-800 text-amber-400 rounded border border-amber-500/30">
+                                <div className="flex justify-between items-end mt-auto">
+                                    <div className="hidden sm:flex gap-1.5">
+                                        {item.tags?.slice(1).map(tag => (
+                                            <span key={tag} className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/5 text-emerald-400/80 rounded-full border border-white/5">
                                                 {tag}
                                             </span>
                                         ))}
                                     </div>
                                     <button
-                                        onClick={() => addToCart(item)}
-                                        className="ml-auto px-4 py-2 bg-gray-800 hover:bg-amber-600 hover:text-white text-gray-300 rounded-lg transition-all duration-300 font-semibold text-xs md:text-sm flex items-center gap-1 group-hover:bg-amber-600 group-hover:text-white"
+                                        onClick={() => handleAddToCart(item)}
+                                        className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 bg-white/5 hover:bg-emerald-600 text-white rounded-full md:rounded-2xl transition-all duration-300 font-semibold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.4)]"
                                     >
-                                        <span>Add</span>
-                                        <ChevronRight className="w-4 h-4" />
+                                        <Plus className="w-5 h-5 md:w-4 md:h-4" />
+                                        <span className="hidden md:inline">Add</span>
                                     </button>
                                 </div>
                             </div>
@@ -286,7 +358,7 @@ export default function Menu({ initialData }: MenuProps) {
                         <div className="p-6 h-full flex flex-col">
                             <div className="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
                                 <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-                                    <ConciergeBell className="text-amber-500" />
+                                    <ConciergeBell className="text-emerald-500" />
                                     Your Order
                                 </h2>
                                 <button
@@ -304,7 +376,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     <p className="text-sm mt-2">Start adding some delicious items!</p>
                                     <button
                                         onClick={() => setIsCartOpen(false)}
-                                        className="mt-6 px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg transition-colors"
+                                        className="mt-6 px-6 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg transition-colors"
                                     >
                                         Browse Menu
                                     </button>
@@ -332,7 +404,7 @@ export default function Menu({ initialData }: MenuProps) {
                                                     </div>
 
                                                     <div className="flex items-center justify-between mt-2">
-                                                        <p className="text-amber-500 font-bold">{cartItem.item.price}</p>
+                                                        <p className="text-emerald-500 font-bold">{cartItem.item.price}</p>
                                                         <div className="flex items-center gap-3 bg-gray-900 rounded-lg p-1">
                                                             <button
                                                                 onClick={() => updateQuantity(cartItem.item.id, -1)}
@@ -357,7 +429,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     <div className="mt-8 border-t border-gray-800 pt-6">
                                         <div className="flex justify-between items-center mb-6">
                                             <span className="text-gray-400 text-lg">Total</span>
-                                            <span className="text-3xl font-bold text-amber-500">CHF {cartTotal.toFixed(2)}</span>
+                                            <span className="text-3xl font-bold text-emerald-500">CHF {cartTotal.toFixed(2)}</span>
                                         </div>
 
                                         {submitMessage && (
@@ -369,7 +441,7 @@ export default function Menu({ initialData }: MenuProps) {
                                         <button
                                             onClick={handleCheckout}
                                             disabled={isSubmitting || cartItems.length === 0}
-                                            className="w-full py-4 bg-amber-600 hover:bg-amber-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:transform-none disabled:shadow-none text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-amber-900/20 transition-all transform hover:-translate-y-1 flex justify-center items-center"
+                                            className="w-full py-4 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-700 disabled:text-gray-400 disabled:transform-none disabled:shadow-none text-white text-lg font-bold rounded-xl shadow-lg hover:shadow-emerald-900/20 transition-all transform hover:-translate-y-1 flex justify-center items-center"
                                         >
                                             {isSubmitting ? (
                                                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>

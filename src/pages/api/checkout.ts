@@ -6,7 +6,7 @@ import { db, Order } from 'astro:db';
 export const POST: APIRoute = async ({ request }) => {
   try {
     const body = await request.json();
-    const { cartItems, cartTotal } = body;
+    const { cartItems, cartTotal, tableNumber } = body;
 
     if (!cartItems || cartItems.length === 0) {
       return new Response(JSON.stringify({ error: 'Cart is empty' }), {
@@ -21,6 +21,7 @@ export const POST: APIRoute = async ({ request }) => {
       id: orderId,
       cartItems: cartItems, // astro:db json() handles objects automatically
       cartTotal: cartTotal,
+      tableNumber: tableNumber || null,
       status: 'pending',
       createdAt: new Date(),
     });
