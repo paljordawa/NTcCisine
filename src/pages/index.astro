@@ -7,7 +7,10 @@ const menuData = await fetchMenuData();
 ---
 
 <Layout>
-	<main class="min-h-screen bg-stone-50">
+	<main class="min-h-screen relative flex flex-col bg-stone-50 pt-5 sm:pt-6">
+		{/* Top Decorative Frame SVG */}
+		<div class="absolute top-0 left-0 w-full h-5 sm:h-6 bg-[url('/frame.svg')] bg-repeat-x bg-[length:auto_100%] z-[60] opacity-90 pointer-events-none mix-blend-multiply drop-shadow-sm"></div>
+
 		{/* Hero Section */}
 		<div class="relative h-[40vh] min-h-[400px] w-full">
 			<div class="absolute inset-0 bg-transparent overflow-hidden">
@@ -52,8 +55,11 @@ const menuData = await fetchMenuData();
 
 		{/* Footer in Matcha */}
 		<footer
-			class="py-12 text-center text-emerald-100/60 bg-emerald-600 text-sm border-t border-emerald-500/50"
+			class="relative pt-16 pb-12 text-center text-emerald-100/60 bg-emerald-600 text-sm"
 		>
+			{/* Decorative Top Frame (White mask) */}
+			<div class="absolute top-0 left-0 w-full h-5 sm:h-6 bg-white/40 pointer-events-none" style="-webkit-mask-image: url('/frame.svg'); mask-image: url('/frame.svg'); -webkit-mask-size: auto 100%; mask-size: auto 100%; -webkit-mask-repeat: repeat-x; mask-repeat: repeat-x;"></div>
+
 			<p>
 				&copy; {new Date().getFullYear()} Nomade Tibetan Cuisine. All rights
 				reserved.

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Check, X, Clock, AlertCircle, Trash2 } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound } from 'lucide-react';
 
 interface CartItem {
     item: { name: string; price: string };
@@ -16,11 +16,27 @@ interface Order {
 }
 
 export default function CounterDashboard() {
+    const [isAuthed, setIsAuthed] = useState(false);
+    const [pinCode, setPinCode] = useState('');
+    const [loginError, setLoginError] = useState(false);
+
     const [orders, setOrders] = useState<Order[]>([]);
     const [history, setHistory] = useState<Order[]>([]);
     const [activeTab, setActiveTab] = useState<'live' | 'history'>('live');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    const handlePinSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (pinCode === '8888') {
+            setIsAuthed(true);
+            setLoginError(false);
+            setPinCode('');
+        } else {
+            setLoginError(true);
+            setPinCode('');
+        }
+    };
 
     const fetchOrders = async () => {
         try {
@@ -114,16 +130,67 @@ export default function CounterDashboard() {
         }
     };
 
+    if (!isAuthed) {
+        return (
+            <div className="min-h-screen bg-stone-50 flex items-center justify-center p-4 fixed inset-0 z-50">
+                <div className="max-w-md w-full bg-white rounded-[2rem] shadow-2xl overflow-hidden border border-emerald-500/10">
+                    <div className="bg-emerald-600 p-8 text-center relative overflow-hidden">
+                        <div className="absolute top-0 left-0 w-full h-8 bg-white/20" style={{ maskImage: "url('/frame.svg')", maskSize: "auto 100%", maskRepeat: "repeat-x", WebkitMaskImage: "url('/frame.svg')", WebkitMaskSize: "auto 100%", WebkitMaskRepeat: "repeat-x" }}></div>
+                        <div className="w-20 h-20 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md mt-6 shadow-inner">
+                            <Lock className="w-10 h-10 text-white" />
+                        </div>
+                        <h2 className="text-3xl font-black text-white drop-shadow-sm">Cashier Login</h2>
+                        <p className="text-emerald-100/90 text-sm mt-2 font-medium">Enter your staff PIN to access orders</p>
+                    </div>
+
+                    <form onSubmit={handlePinSubmit} className="p-8 space-y-6">
+                        <div>
+                            <label className="block text-xs font-bold text-stone-500 uppercase tracking-widest mb-3">Secure PIN Code</label>
+                            <div className="relative">
+                                <KeyRound className="absolute left-6 top-1/2 transform -translate-y-1/2 text-stone-400 w-6 h-6" />
+                                <input
+                                    type="password"
+                                    pattern="[0-9]*"
+                                    inputMode="numeric"
+                                    value={pinCode}
+                                    onChange={(e) => setPinCode(e.target.value)}
+                                    maxLength={4}
+                                    placeholder="••••"
+                                    className={`w-full pl-16 pr-6 py-5 text-center text-3xl font-black tracking-[0.5em] bg-stone-50 border-2 rounded-2xl outline-none transition-all ${loginError ? 'border-red-400 text-red-600 focus:border-red-500 focus:ring-4 focus:ring-red-100 placeholder-red-300 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : 'border-stone-200 text-emerald-900 focus:border-amber-500 focus:ring-4 focus:ring-amber-200/50 placeholder-stone-300'}`}
+                                    autoFocus
+                                />
+                            </div>
+                            {loginError && (
+                                <p className="text-red-500 text-sm font-bold text-center mt-4 animate-pulse">Incorrect PIN. Please try again.</p>
+                            )}
+                        </div>
+
+                        <button
+                            type="submit"
+                            className="w-full py-5 text-lg bg-amber-600 hover:bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-amber-600/40 hover:shadow-emerald-600/40 transition-all active:scale-95 flex items-center justify-center gap-2"
+                        >
+                            <Lock size={20} />
+                            Unlock Dashboard
+                        </button>
+                    </form>
+                </div>
+            </div>
+        );
+    }
+
     if (loading && orders.length === 0) {
         return <div className="text-emerald-900 font-bold text-center py-20 text-xl animate-pulse">Loading Web Orders...</div>;
     }
 
     return (
         <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-                <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
-                    Nomade Cuisine <span className="text-emerald-600">Orders</span>
-                </h1>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+                <div className="flex items-center gap-4 group cursor-pointer transition-transform hover:scale-105">
+                     <img src="/nomade-logo-final-svg.svg" alt="Nomade Logo" className="w-16 sm:w-20 drop-shadow-md" />
+                     <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
+                         Counter <span className="text-emerald-600 block sm:inline">Dashboard</span>
+                     </h1>
+                </div>
 
                 <div className="flex bg-stone-100 p-1 rounded-lg border border-stone-200 shadow-sm">
                     <button

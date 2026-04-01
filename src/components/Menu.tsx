@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
-import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2 } from 'lucide-react';
+import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info } from 'lucide-react';
 
 interface CartItem {
     item: MenuItem;
@@ -18,6 +18,7 @@ export default function Menu({ initialData }: MenuProps) {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
+    const [isAboutOpen, setIsAboutOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
@@ -180,6 +181,18 @@ export default function Menu({ initialData }: MenuProps) {
                 </button>
             </div>
 
+            {/* About Us Toggle - Top Right */}
+            <div className="absolute -top-12 right-4 sm:-top-8 sm:right-8 z-20 flex">
+                <button
+                    onClick={() => setIsAboutOpen(true)}
+                    className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-all duration-300 hover:scale-105 bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 shadow-sm"
+                    aria-label="About Us"
+                >
+                    <Info size={20} />
+                    <span className="text-sm font-bold hidden sm:block">About Us</span>
+                </button>
+            </div>
+
             {/* Level 1 Tabs (Main Categories) Straddling the Color Horizon */}
             <div className="relative z-20 flex justify-center -mb-7 sm:-mb-8">
                 <div className="inline-flex bg-white/95 p-1.5 rounded-full shadow-lg shadow-amber-900/10 border border-stone-100 backdrop-blur-md overflow-x-auto max-w-full">
@@ -201,7 +214,10 @@ export default function Menu({ initialData }: MenuProps) {
 
             {/* Matcha Content Era Begins -- Subsuming the menu grids down to the footer */}
             <div className="w-full bg-emerald-600 relative pt-16 pb-24 shadow-[0_-15px_40px_rgba(76,90,67,0.2)] min-h-screen">
-                <div className="absolute inset-0 bg-[url('/tibetan-pattern.avif')] bg-fixed bg-[length:400px] bg-repeat opacity-[0.06] pointer-events-none mix-blend-color-burn"></div>
+                {/* Mobile-Safe Fixed Background: Using sticky inside an absolute container to bypass iOS Safari bg-fixed bugs */}
+                <div className="absolute inset-0 overflow-hidden pointer-events-none">
+                    <div className="sticky top-0 w-full h-screen bg-[url('/tibetan-pattern.avif')] bg-[length:400px] bg-repeat opacity-[0.06] mix-blend-color-burn"></div>
+                </div>
 
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4">
 
@@ -245,7 +261,7 @@ export default function Menu({ initialData }: MenuProps) {
                                         {/* Tags over image */}
                                         <div className="absolute top-2 left-2 flex flex-wrap gap-1">
                                             {item.tags?.slice(0, 1).map(tag => (
-                                                <span key={tag} className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full shadow-sm">
+                                                <span key={tag} className="px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full shadow-sm">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -255,11 +271,11 @@ export default function Menu({ initialData }: MenuProps) {
                                     {/* Bottom 45%: Content */}
                                     <div className="flex-grow flex flex-col justify-between px-1.5 pb-1">
                                         <div className="flex flex-col">
-                                            <h3 className="text-[10px] sm:text-[11px] md:text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1">
+                                            <h3 className="text-[10px] sm:text-[11px] md:text-sm lg:text-base xl:text-lg font-bold text-gray-900 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1">
                                                 {item.name}
                                             </h3>
                                             {item.description && (
-                                                <p className="text-[8px] sm:text-[9px] md:text-[10px] text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2">
+                                                <p className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2">
                                                     {item.description}
                                                 </p>
                                             )}
@@ -269,7 +285,7 @@ export default function Menu({ initialData }: MenuProps) {
                                             {item.variants && item.variants.length > 1 ? (
                                                 <div className="relative flex-grow min-w-0">
                                                     <select
-                                                        className="w-full bg-stone-50 text-[9px] md:text-[11px] font-bold text-amber-700 border border-stone-200 rounded-lg pl-2 pr-5 py-1 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
+                                                        className="w-full bg-stone-50 text-[9px] md:text-[11px] lg:text-[13px] xl:text-sm font-bold text-amber-700 border border-stone-200 rounded-lg pl-2 pr-5 py-1 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
                                                         value={selectedVariants[item.id] || item.variants[0].variant_id}
                                                         onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
                                                     >
@@ -280,20 +296,20 @@ export default function Menu({ initialData }: MenuProps) {
                                                         ))}
                                                     </select>
                                                     <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 pointer-events-none text-amber-600">
-                                                        <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                        <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                                     </div>
                                                 </div>
                                             ) : (
-                                                <span className="text-amber-700 font-black text-[11px] md:text-xs tracking-tight">
+                                                <span className="text-amber-700 font-black text-[11px] md:text-xs lg:text-sm xl:text-base tracking-tight">
                                                     {item.price}
                                                 </span>
                                             )}
 
                                             <button
                                                 onClick={(e) => handleAddToCart(item, e)}
-                                                className="shrink-0 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
+                                                className="shrink-0 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
                                             >
-                                                <Plus className="w-4 h-4" />
+                                                <Plus className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
                                             </button>
                                         </div>
                                     </div>
@@ -313,7 +329,7 @@ export default function Menu({ initialData }: MenuProps) {
                                         />
                                         <div className="absolute top-2 left-2 flex flex-col gap-1">
                                             {item.tags?.slice(0, 1).map(tag => (
-                                                <span key={tag} className="px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full border border-stone-200 shadow-sm">
+                                                <span key={tag} className="px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full border border-stone-200 shadow-sm">
                                                     {tag}
                                                 </span>
                                             ))}
@@ -322,19 +338,19 @@ export default function Menu({ initialData }: MenuProps) {
 
                                     <div className="flex-grow flex flex-col py-1 md:py-2 pr-2 md:pr-4">
                                         <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4 w-full">
-                                            <h3 className="text-xs md:text-base font-bold text-gray-900 group-hover:text-amber-700 transition-colors w-full md:w-auto">{item.name}</h3>
-                                            <span className="shrink-0 text-[10px] md:text-xs font-bold text-amber-700 tabular-nums bg-white/95 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-amber-100 shadow-sm inline-block">
+                                            <h3 className="text-xs md:text-base lg:text-xl xl:text-2xl font-bold text-gray-900 group-hover:text-amber-700 transition-colors w-full md:w-auto">{item.name}</h3>
+                                            <span className="shrink-0 text-[10px] md:text-xs lg:text-sm xl:text-base font-bold text-amber-700 tabular-nums bg-white/95 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-amber-100 shadow-sm inline-block">
                                                 {item.variants && item.variants.length > 1
                                                     ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price
                                                     : item.price}
                                             </span>
                                         </div>
-                                        <p className="text-stone-500 font-medium text-[11px] md:text-xs leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
+                                        <p className="text-stone-500 font-medium text-[11px] md:text-xs lg:text-sm xl:text-base leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
 
                                         {item.variants && item.variants.length > 1 && (
                                             <div className="mb-3 w-full relative mt-1">
                                                 <select
-                                                    className="w-full bg-stone-50 text-gray-900 text-[11px] md:text-xs font-bold border border-stone-200 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
+                                                    className="w-full bg-stone-50 text-gray-900 text-[11px] md:text-xs lg:text-sm xl:text-base font-bold border border-stone-200 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
                                                     value={selectedVariants[item.id] || item.variants[0].variant_id}
                                                     onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
                                                 >
@@ -345,7 +361,7 @@ export default function Menu({ initialData }: MenuProps) {
                                                     ))}
                                                 </select>
                                                 <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-amber-600">
-                                                    <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                    <svg className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                                 </div>
                                             </div>
                                         )}
@@ -353,17 +369,17 @@ export default function Menu({ initialData }: MenuProps) {
                                         <div className="flex justify-between items-end mt-auto">
                                             <div className="hidden sm:flex gap-1.5">
                                                 {item.tags?.slice(1).map(tag => (
-                                                    <span key={tag} className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-stone-50 text-stone-600 rounded-full border border-stone-200">
+                                                    <span key={tag} className="px-2 py-1 text-[9px] lg:text-[11px] xl:text-xs font-bold uppercase tracking-wider bg-stone-50 text-stone-600 rounded-full border border-stone-200">
                                                         {tag}
                                                     </span>
                                                 ))}
                                             </div>
                                             <button
                                                 onClick={(e) => handleAddToCart(item, e)}
-                                                className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
+                                                className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 lg:px-6 lg:py-3 xl:px-8 xl:py-4 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
                                             >
-                                                <Plus className="w-5 h-5 md:w-4 md:h-4" />
-                                                <span className="hidden md:inline">Add</span>
+                                                <Plus className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                                                <span className="hidden md:inline lg:text-lg">Add</span>
                                             </button>
                                         </div>
                                     </div>
@@ -499,6 +515,67 @@ export default function Menu({ initialData }: MenuProps) {
                                     </div>
                                 </>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* About Us Modal */}
+            {isAboutOpen && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
+                    {/* Backdrop */}
+                    <div
+                        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md transition-opacity"
+                        onClick={() => setIsAboutOpen(false)}
+                    ></div>
+                    
+                    {/* Modal Content */}
+                    <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
+                        {/* Header Banner */}
+                        <div className="h-40 sm:h-52 w-full bg-[url('/hero-bg.jpg')] bg-cover bg-center relative bg-stone-200">
+                            <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
+                            
+                            <button
+                                onClick={() => setIsAboutOpen(false)}
+                                className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white text-white hover:text-gray-900 rounded-full backdrop-blur-md transition-colors shadow-lg"
+                            >
+                                <X size={20} />
+                            </button>
+
+                            <div className="absolute bottom-4 left-6 text-white max-w-[80%]">
+                                <h2 className="text-2xl sm:text-3xl font-black mb-1 drop-shadow-lg leading-tight">Nomade Tibetan Cuisine</h2>
+                                <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px] sm:text-xs drop-shadow-md">Authentic Himalayan Flavors</p>
+                            </div>
+                        </div>
+                        
+                        <div className="p-6 sm:p-8 bg-stone-50">
+                            <div className="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed font-medium">
+                                <p>
+                                    Welcome to Nomade! We bring you the authentic taste of the Himalayas right here. 
+                                    Our dishes are crafted with traditional recipes passed down through generations, 
+                                    using the freshest ingredients and bespoke spices.
+                                </p>
+                                <p>
+                                    Whether you're craving comforting Momo (dumplings), hearty Thukpa, or rich curries, 
+                                    our kitchen is dedicated to providing you with an unforgettable culinary journey. 
+                                    Thank you for dining with us!
+                                </p>
+                            </div>
+
+                            <div className="mt-8 pt-6 border-t border-stone-200 grid grid-cols-2 gap-6">
+                                <div>
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Location</h4>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">1003 Lausanne<br/>Switzerland</p>
+                                </div>
+                                <div className="text-right sm:text-left">
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Hours</h4>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Mon-Sat: 11:30 - 22:00<br/>Sun: Closed</p>
+                                </div>
+                                <div className="col-span-2">
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Contact</h4>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">info@nomadecuisine.ch<br/>+41 21 123 45 67</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

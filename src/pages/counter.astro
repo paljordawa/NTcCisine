@@ -4,7 +4,12 @@ import CounterDashboard from "../components/CounterDashboard";
 ---
 
 <Layout>
-    <main class="min-h-screen bg-gray-950 p-4 sm:p-8">
-        <CounterDashboard client:only="react" />
-    </main>
+	<main class="min-h-screen relative flex flex-col bg-stone-50">
+        {/* Top Decorative Frame SVG */}
+        <div class="absolute top-0 left-0 w-full h-5 sm:h-6 bg-[url('/frame.svg')] bg-repeat-x bg-[length:auto_100%] z-[60] opacity-90 pointer-events-none mix-blend-multiply drop-shadow-sm"></div>
+
+        <div class="relative z-10 w-full p-4 sm:p-8 pt-10 sm:pt-14">
+            <CounterDashboard client:only="react" />
+        </div>
+	</main>
 </Layout>
