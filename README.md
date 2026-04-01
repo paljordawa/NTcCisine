@@ -1,70 +1,85 @@
-# Nomade Tibetan Cuisine - Restaurant Web App
+# 🏔️ Nomade Tibetan Cuisine - Restaurant Web App
 
-A modern, full-stack, responsive web application for a Tibetan restaurant called "Nomade Tibetan Cuisine". It displays a live menu synchronized with Loyverse POS, styled with a premium matcha green glassmorphic aesthetic, and enables direct table ordering with a staff-facing Counter Dashboard.
+A modern, full-stack, highly responsive web application designed for "Nomade Tibetan Cuisine". This project fuses a premium, culturally-authentic visual aesthetic with powerful POS integration. 
 
-## 🚀 Features
+It acts as both a **dynamic customer-facing digital menu** (synchronized in real-time with Loyverse POS) and a **staff-facing Counter Dashboard** for live order management, securely locked behind a staff PIN.
 
-*   **Loyverse POS Integration:** Real-time synchronization of food categories, items, and variations directly from your Loyverse store API.
-*   **Intuitive Variation Selection:** Beautifully styled dropdown selectors embedded directly within item cards for handling POS item options (e.g. Momo portions, meat choices).
+---
+
+## 🚀 Key Features
+
+*   **Loyverse POS Integrations:** Automatic synchronization of food categories, items, and variations directly from the Loyverse API. 
+*   **Intuitive Square-Grid Layout:** A high-contrast "bento-box" square card aesthetic optimized for both mobile and desktop screens.
+*   **Staff Counter Dashboard:** A dedicated `/counter` terminal route for staff to view, interact with, modify, accept, and reject customer orders in real-time, protected by a secure 4-digit PIN pad.
+*   **Aesthetic Tritone Theme:** Carefully curated visual palette consisting of warm rice-paper `stone-50`, spicy mustard `amber-600`, and deep matcha `emerald-600` colors, overlaid with visually repeating cultural SVG frames.
 *   **QR Code Table Ordering:** Seamlessly trace orders to specific tables when customers scan dynamic URLs (e.g. `/?table=10`).
-*   **Aesthetic Japanese Matcha Theme:** Deep emerald greens, dark slate backgrounds, bold typography, and gorgeous glassmorphic transparencies.
-*   **Live Counter Dashboard:** Staff-facing terminal utilizing Astro DB to view, interact with, modify, accept, and reject customer orders in real-time.
-*   **Responsive UX:** Optimized grid and list views that elegantly adapt to both mobile and desktop screens.
 
-## 🛠️ Tech Stack
+---
 
-*   **Framework:** [Astro](https://astro.build/) - For fast static generation and full-stack API capabilities.
-*   **Database:** `astro:db` (LibSQL) for persistent order tracking and local state.
-*   **Styling:** [Tailwind CSS](https://tailwindcss.com/) - Utility-first CSS framework mapped to custom emerald themes.
-*   **Interactive UI:** React components handling complex cart states, dropdown selections, and counter syncing.
-*   **Icons:** `lucide-react` for scalable SVG icon assets.
+## 🛠️ Technology Architecture
+
+### 1. Frontend: Astro + React + Tailwind
+*   **[Astro](https://astro.build/):** The core framework driving the application. Offers fast static rendering for the homepage and seamless API route handling for the backend endpoints.
+*   **React:** Used via Astro islands (`client:load`) to manage complex, highly interactive UI components like the `Menu.tsx` cart system and the live `CounterDashboard.tsx`.
+*   **Tailwind CSS:** Powers the entire design system, leveraging version 4 `@theme` directives to enforce the strict Stone/Amber/Emerald tritone palette.
+
+### 2. Database: Astro DB + Turso
+*   **Astro DB:** The native, typesafe ORM and database solution used to manage the `Orders` table.
+*   **[Turso](https://turso.tech/):** The production database provider. Turso provides a globally distributed SQLite-compatible (libSQL) edge database perfectly suited for Astro DB's serverless queries.
+
+### 3. Hosting: Netlify
+*   **[Netlify](https://www.netlify.com/):** The application is hosted purely on Netlify, taking advantage of Netlify serverless functions for the Astro API endpoints (Loyverse sync and order processing). 
+*   Netlify Blob storage is utilized natively by Astro to emulate and persist sessions across deployments.
+
+---
 
 ## 📁 Project Structure
 
 ```text
 /
-├── public/                 # Static assets (images, fonts)
+├── public/                 # Static assets (images, fonts, frame.svg, logos)
 ├── db/
-│   └── config.ts           # Astro DB Schema definition (Orders table)
+│   └── config.ts           # Astro DB Schema definition (Orders table for Turso)
 ├── src/
 │   ├── components/
 │   │   ├── Menu.tsx             # Interactive customer-facing menu and cart
-│   │   └── CounterDashboard.tsx # Staff-facing live order management
+│   │   └── CounterDashboard.tsx # Staff-facing live order management + PIN Lock
 │   ├── data/
 │   │   └── menu.ts              # TypeScript definitions mapping Loyverse entities
 │   ├── lib/
 │   │   └── loyverse.ts          # Loyverse API fetch and variation parsing logic
 │   ├── pages/
-│   │   └── api/                 # Checkout and Order REST API endpoints
-│   ├── layouts/
-│   └── pages/                   # Astro templates (e.g. index.astro)
+│   │   ├── api/                 # Checkout and Order REST API endpoints
+│   │   ├── index.astro          # Main Customer Menu Application
+│   │   └── counter.astro        # Protected Admin Dashboard
+│   └── layouts/                 # Astro HTML templates
 ```
 
-## 📋 Customization & Workflows
+---
 
-### POS Integration (Loyverse)
-The application dynamically builds the menu from **Loyverse POS**.
-*   **Setup:** Go to your Loyverse Back Office, generate a Developer API Access Token, and save it in a `.env` file at the root of this project:
-    `LOYVERSE_ACCESS_TOKEN=your_token_here`
-*   The `fetchMenuData` function automatically groups matching base items into dynamic variation dropdown selectors based on Loyverse properties.
+## ⚙️ Configuration & Deployment
 
-### QR Code Menus
-When generating QR Codes for physical tables, append the `table` query parameter to the site URL:
-*   **Example Table 5 URL:** `https://your-site.app/?table=5`
-When an order is submitted via that link, "Table 5" will appear prominently on the Live Counter Dashboard ticket.
+### Loyverse POS Setup
+The customer menu is built dynamically from **Loyverse POS**.
+1. Log into your Loyverse Back Office.
+2. Generate a **Developer API Access Token**.
+3. Save it as an environment variable (`LOYVERSE_ACCESS_TOKEN`) in Netlify.
 
-### Theming
-The site utilizes a premium matcha theme:
-*   **Backgrounds:** Deep slate/grays (`gray-900`, `gray-950`).
-*   **Accents:** Emerald greens (`emerald-500` to `emerald-700`) replacing standard reds and oranges. 
+### Turso Database Setup
+To hook up Astro DB to your production Turso database:
+1. Create a database on Turso (`turso db create nomade-db`).
+2. Generate database credentials using the Turso CLI.
+3. Add the resulting `ASTRO_STUDIO_APP_TOKEN` (or direct Turso credentials depending on your adapter) to your Netlify Environment Variables.
 
-## 🧞 Commands
-
-| Command                   | Action                                                |
-| :------------------------ | :---------------------------------------------------- |
-| `npm run dev`             | Starts local dev server at `localhost:4321`           |
-| `npm run build`           | Builds the production site and DB schema to `./dist/` |
-| `npm run preview`         | Preview your build locally before deploying           |
+### Netlify Deployment
+1. Connect your GitHub repository to Netlify.
+2. The build command is pre-configured to `npm run build`.
+3. The publish directory is `dist`.
+4. Ensure all environment variables (Loyverse Token, Database URLs) are correctly mapped in the Netlify dashboard before triggering a production build.
 
 ---
-*Built with ❤️ for Nomade Tibetan Cuisine.*
+
+## 🔒 Security
+
+*   **Cashier Login:** Access to the `/counter` route is strictly protected by a client-side PIN pad rendering lock. The default PIN is configured to `8888`.
+*   **API Obfuscation:** The Loyverse API key is securely managed via Astro SSR and is never exposed to the client browser.
