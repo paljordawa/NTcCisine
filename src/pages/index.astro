@@ -4,52 +4,55 @@ import Menu from "../components/Menu";
 
 import { fetchMenuData } from "../lib/loyverse";
 const menuData = await fetchMenuData();
-
 ---
 
 <Layout>
-	<main class="min-h-screen bg-gray-950">
+	<main class="min-h-screen bg-stone-50">
 		{/* Hero Section */}
 		<div class="relative h-[40vh] min-h-[400px] w-full">
 			<div class="absolute inset-0 bg-transparent overflow-hidden">
 				<div
-					class="absolute inset-0 bg-[url('/Tibetan-cuisine.jpg')] bg-cover bg-center bg-no-repeat bg-fixed opacity-60"
+					class="absolute inset-0 bg-[url('/Tibetan-cuisine.jpg')] bg-cover bg-center bg-no-repeat bg-fixed opacity-40"
 				>
 				</div>
 				<div
-					class="absolute inset-0 bg-gradient-to-b from-gray-950/80 via-gray-950/40 to-gray-950 pointer-events-none"
+					class="absolute inset-0 bg-gradient-to-b from-stone-50/80 via-stone-50/60 to-stone-50 pointer-events-none"
 				>
 				</div>
 			</div>
 
 			<div
-				class="relative z-10 h-full flex flex-col items-center justify-center text-center px-4"
+				class="relative z-10 h-full flex flex-col items-center justify-center text-center p-3 pt-6 sm:pt-12"
 			>
+				{/* Natural Floating Logo */}
+				<div class="relative flex items-center justify-center group mb-6 hover:scale-105 transition-transform duration-700 w-28 h-28 md:w-36 md:h-36 lg:w-44 lg:h-44">
+					<img
+						src="/nomade-logo-final-svg.svg"
+						alt="Nomade Logo"
+						class="w-full h-full object-contain relative z-10 drop-shadow-sm"
+					/>
+				</div>
 				<h1
-					class="text-5xl md:text-7xl font-bold text-white mb-4 tracking-tight drop-shadow-lg"
+					class="text-4xl md:text-5xl font-bold text-gray-900 mb-2 tracking-tight drop-shadow-sm"
 				>
-					<span class="text-emerald-500">Nomade</span> - cuisine tibétaine
+					<span class="text-amber-700">Nomade</span> - cuisine tibétaine
 				</h1>
 				<p
-					class="text-xl md:text-2xl text-gray-300 font-light tracking-wide max-w-2xl"
+					class="text-lg md:text-xl text-stone-600 font-medium tracking-wide max-w-2xl"
 				>
 					Authentic Flavors of Tibetan Nomad
 				</p>
 			</div>
 		</div>
 
-		{/* Menu Section */}
-		<div class="relative z-20 -mt-20">
-			<div
-				class="absolute inset-0 bg-[url('/tibetan-pattern.avif')] bg-fixed bg-[length:200px] bg-repeat opacity-4 pointer-events-none -z-10"
-			>
-			</div>
+		{/* Menu Section natively handles its own split background */}
+		<div class="relative z-20">
 			<Menu client:load initialData={menuData} />
 		</div>
 
-		{/* Footer */}
+		{/* Footer in Matcha */}
 		<footer
-			class="py-12 text-center text-gray-500 text-sm border-t border-gray-900 mt-20 bg-fixed"
+			class="py-12 text-center text-emerald-100/60 bg-emerald-600 text-sm border-t border-emerald-500/50"
 		>
 			<p>
 				&copy; {new Date().getFullYear()} Nomade Tibetan Cuisine. All rights

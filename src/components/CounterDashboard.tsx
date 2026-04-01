@@ -115,58 +115,58 @@ export default function CounterDashboard() {
     };
 
     if (loading && orders.length === 0) {
-        return <div className="text-white text-center py-20 text-xl animate-pulse">Loading Web Orders...</div>;
+        return <div className="text-emerald-900 font-bold text-center py-20 text-xl animate-pulse">Loading Web Orders...</div>;
     }
 
     return (
         <div className="max-w-6xl mx-auto">
             <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-4">
-                <h1 className="text-4xl font-bold text-white tracking-tight">
-                    Nomade Cuisine <span className="text-emerald-500">Orders</span>
+                <h1 className="text-4xl font-bold text-gray-900 tracking-tight">
+                    Nomade Cuisine <span className="text-emerald-600">Orders</span>
                 </h1>
 
-                <div className="flex bg-gray-900 p-1 rounded-lg border border-gray-800">
+                <div className="flex bg-stone-100 p-1 rounded-lg border border-stone-200 shadow-sm">
                     <button
                         onClick={() => setActiveTab('live')}
-                        className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'live' ? 'bg-emerald-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'live' ? 'bg-white text-gray-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-gray-900'}`}
                     >
                         Live
-                        {orders.length > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'live' ? 'bg-gray-900 text-emerald-500' : 'bg-red-500 text-white'}`}>{orders.length}</span>}
+                        {orders.length > 0 && <span className={`text-xs px-2 py-0.5 rounded-full ${activeTab === 'live' ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-600'}`}>{orders.length}</span>}
                     </button>
                     <button
                         onClick={() => setActiveTab('history')}
-                        className={`px-6 py-2 rounded-md font-bold transition-all ${activeTab === 'history' ? 'bg-emerald-500 text-gray-900 shadow-md' : 'text-gray-400 hover:text-white'}`}
+                        className={`px-6 py-2 rounded-md font-bold transition-all ${activeTab === 'history' ? 'bg-white text-gray-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-gray-900'}`}
                     >
                         History
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-gray-400 bg-gray-900 border border-gray-800 px-4 py-2 rounded-full shadow-lg">
-                    <span className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse"></span>
+                <div className="flex items-center gap-2 text-stone-600 font-bold bg-white border border-stone-200 px-4 py-2 rounded-full shadow-sm">
+                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
                     Live Sync
                 </div>
             </div>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-900/50 border border-red-500 text-red-200 rounded-lg flex items-center gap-3">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-3 font-bold">
                     <AlertCircle />
                     {error}
                 </div>
             )}
 
             {activeTab === 'live' && orders.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-32 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
-                    <Clock size={64} className="text-gray-600 mb-4" />
-                    <p className="text-2xl text-gray-400 font-medium">No pending orders</p>
-                    <p className="text-gray-500 mt-2">New web orders will appear here automatically.</p>
+                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-2xl border-2 border-emerald-100 border-dashed shadow-sm">
+                    <Clock size={64} className="text-emerald-200 mb-4" />
+                    <p className="text-2xl text-emerald-900 font-bold">No pending orders</p>
+                    <p className="text-emerald-800/60 mt-2 font-medium">New web orders will appear here automatically.</p>
                 </div>
             )}
 
             {activeTab === 'history' && history.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-32 bg-gray-900/50 rounded-2xl border border-gray-800 border-dashed">
-                    <Check size={64} className="text-gray-600 mb-4" />
-                    <p className="text-2xl text-gray-400 font-medium">No history</p>
-                    <p className="text-gray-500 mt-2">Processed orders will appear here.</p>
+                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-2xl border-2 border-emerald-100 border-dashed shadow-sm">
+                    <Check size={64} className="text-emerald-200 mb-4" />
+                    <p className="text-2xl text-emerald-900 font-bold">No history</p>
+                    <p className="text-emerald-800/60 mt-2 font-medium">Processed orders will appear here.</p>
                 </div>
             )}
 
@@ -178,18 +178,18 @@ export default function CounterDashboard() {
                         const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                         return (
-                            <div key={order.id} className="bg-gray-900 border border-emerald-500/30 rounded-2xl overflow-hidden shadow-2xl flex flex-col transform transition-transform duration-300 hover:-translate-y-1">
-                                <div className="bg-gradient-to-r from-emerald-600 to-emerald-500 p-4 text-white flex justify-between items-center">
+                            <div key={order.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xl shadow-stone-900/5 flex flex-col transform transition-transform duration-300 hover:-translate-y-1">
+                                <div className="bg-gradient-to-r from-stone-800 to-stone-700 p-4 text-white flex justify-between items-center shadow-sm">
                                     <div className="flex items-center gap-2 font-bold text-lg">
                                         <Clock size={18} />
                                         {timeString}
                                         {order.tableNumber && (
-                                            <span className="ml-2 bg-white/20 px-2.5 py-0.5 rounded-full text-sm flex items-center shadow-inner">
+                                            <span className="ml-2 bg-white/20 px-2.5 py-0.5 rounded-full text-sm flex items-center shadow-inner text-amber-100">
                                                 Table {order.tableNumber}
                                             </span>
                                         )}
                                     </div>
-                                    <div className="font-mono bg-black/20 px-2 py-1 rounded text-sm tracking-wider">
+                                    <div className="font-mono bg-black/20 px-2 py-1 rounded text-sm tracking-wider text-amber-100">
                                         # {order.id.slice(0, 6).toUpperCase()}
                                     </div>
                                 </div>
@@ -197,20 +197,20 @@ export default function CounterDashboard() {
                                 <div className="p-6 flex-grow">
                                     <div className="space-y-3 mb-6 min-h-[100px]">
                                         {items.length === 0 && (
-                                            <p className="text-red-400 text-sm italic text-center py-4">All items removed</p>
+                                            <p className="text-red-500 font-bold text-sm italic text-center py-4 bg-red-50 rounded-lg">All items removed</p>
                                         )}
                                         {items.map((cartItem, idx) => (
-                                            <div key={idx} className="flex justify-between items-start border-b border-gray-800 pb-2 last:border-0 last:pb-0 group">
+                                            <div key={idx} className="flex justify-between items-start border-b border-stone-100 pb-2 last:border-0 last:pb-0 group">
                                                 <div className="flex items-start gap-3 flex-grow">
-                                                    <span className="bg-gray-800 text-gray-300 font-bold px-2 py-0.5 rounded text-sm w-7 text-center shrink-0">
+                                                    <span className="bg-stone-100 border border-stone-200 text-stone-700 font-bold px-2 py-0.5 rounded text-sm w-7 text-center shrink-0">
                                                         {cartItem.quantity}
                                                     </span>
-                                                    <span className="text-gray-200 text-lg leading-tight pt-0.5">{cartItem.item.name}</span>
+                                                    <span className="text-gray-900 font-bold text-lg leading-tight pt-0.5">{cartItem.item.name}</span>
                                                 </div>
                                                 {activeTab === 'live' && (
                                                     <button
                                                         onClick={() => handleRemoveItem(order.id, idx)}
-                                                        className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all p-1.5 bg-gray-800 hover:bg-red-900/30 rounded-lg ml-2"
+                                                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-all p-1.5 bg-red-50/50 hover:bg-red-100 rounded-lg ml-2"
                                                         title="Mark unavailable & remove"
                                                     >
                                                         <Trash2 size={16} />
@@ -220,27 +220,27 @@ export default function CounterDashboard() {
                                         ))}
                                     </div>
 
-                                    <div className="flex justify-between items-end border-t border-gray-800 pt-4 mt-auto">
-                                        <span className="text-gray-400 uppercase tracking-wider text-sm font-bold">Total</span>
-                                        <span className={`text-2xl font-bold ${items.length === 0 ? 'text-gray-600 line-through' : 'text-emerald-500'}`}>
+                                    <div className="flex justify-between items-end border-t border-stone-100 pt-4 mt-auto">
+                                        <span className="text-stone-500 uppercase tracking-wider text-sm font-bold">Total</span>
+                                        <span className={`text-2xl font-black ${items.length === 0 ? 'text-stone-300 line-through' : 'text-amber-600'}`}>
                                             CHF {order.cartTotal.toFixed(2)}
                                         </span>
                                     </div>
                                 </div>
 
-                                <div className={`p-4 bg-gray-800/50 flex gap-3 border-t border-gray-800 ${activeTab === 'history' ? 'justify-between items-center' : ''}`}>
+                                <div className={`p-4 bg-stone-50 flex gap-3 border-t border-stone-200 ${activeTab === 'history' ? 'justify-between items-center' : ''}`}>
                                     {activeTab === 'live' ? (
                                         <>
                                             <button
                                                 onClick={() => handleAction(order.id, 'reject')}
-                                                className="flex-1 py-3 px-4 bg-gray-800 hover:bg-red-600/90 text-gray-300 hover:text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2 border border-gray-700 hover:border-red-500"
+                                                className="flex-1 py-3 px-4 bg-white hover:bg-red-50 text-stone-600 hover:text-red-600 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 border border-stone-200 hover:border-red-200 shadow-sm"
                                             >
                                                 <X size={20} />
                                                 Reject
                                             </button>
                                             <button
                                                 onClick={() => handleAction(order.id, 'accept')}
-                                                className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${items.length === 0 ? 'bg-gray-700 text-gray-500 cursor-not-allowed' : 'bg-green-600 hover:bg-green-500 text-white shadow-lg shadow-green-900/20 transform hover:scale-105'}`}
+                                                className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${items.length === 0 ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-900/20 transform hover:scale-105'}`}
                                             >
                                                 <Check size={20} />
                                                 {items.length === 0 ? 'Empty Ticket' : 'Accept & POS'}
@@ -248,16 +248,16 @@ export default function CounterDashboard() {
                                         </>
                                     ) : (
                                         <>
-                                            <span className="text-gray-400 text-sm font-medium pr-2 border-r border-gray-700 uppercase tracking-widest">
+                                            <span className="text-stone-500 text-sm font-bold pr-2 border-r border-stone-200 uppercase tracking-widest">
                                                 Status
                                             </span>
                                             <div className="flex-1 flex justify-end">
                                                 {order.status === 'accepted' ? (
-                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-green-500/20 text-green-400 border border-green-500/30 rounded-full font-bold">
+                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-green-50 text-green-700 border border-green-200 font-bold rounded-lg shadow-sm">
                                                         <Check size={16} /> Accepted
                                                     </span>
                                                 ) : (
-                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-red-500/20 text-red-400 border border-red-500/30 rounded-full font-bold">
+                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-700 border border-red-200 font-bold rounded-lg shadow-sm">
                                                         <X size={16} /> Rejected
                                                     </span>
                                                 )}
