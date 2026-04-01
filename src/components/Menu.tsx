@@ -26,21 +26,21 @@ export default function Menu({ initialData }: MenuProps) {
         const flyEl = document.createElement('img');
         flyEl.src = imageSrc;
         flyEl.className = 'fixed z-[100] w-12 h-12 object-cover rounded-full shadow-2xl border-2 border-emerald-500 pointer-events-none transition-all duration-700 ease-in-out';
-        
-        flyEl.style.left = `${startX - 24}px`; 
+
+        flyEl.style.left = `${startX - 24}px`;
         flyEl.style.top = `${startY - 24}px`;
         flyEl.style.opacity = '1';
         flyEl.style.transform = 'scale(1)';
-        
+
         document.body.appendChild(flyEl);
-        
+
         flyEl.getBoundingClientRect(); // trigger reflow
-        
+
         flyEl.style.left = `${endX - 10}px`;
         flyEl.style.top = `${endY - 10}px`;
         flyEl.style.transform = 'scale(0.1)';
         flyEl.style.opacity = '0.1';
-        
+
         setTimeout(() => flyEl.remove(), 700);
     };
 
@@ -81,7 +81,7 @@ export default function Menu({ initialData }: MenuProps) {
                 ...item,
                 id: variantInfo?.variant_id || item.id,
                 variant_id: variantInfo?.variant_id || item.id,
-                price: variantInfo?.price || item.price 
+                price: variantInfo?.price || item.price
             };
             addToCart(itemToAdd);
         }
@@ -118,7 +118,7 @@ export default function Menu({ initialData }: MenuProps) {
         if (cartItems.length === 0) return;
         setIsSubmitting(true);
         setSubmitMessage(null);
-        
+
         // Extract table number from URL
         const params = new URLSearchParams(window.location.search);
         const tableNumber = params.get('table');
@@ -202,11 +202,11 @@ export default function Menu({ initialData }: MenuProps) {
             {/* Matcha Content Era Begins -- Subsuming the menu grids down to the footer */}
             <div className="w-full bg-emerald-600 relative pt-16 pb-24 shadow-[0_-15px_40px_rgba(76,90,67,0.2)] min-h-screen">
                 <div className="absolute inset-0 bg-[url('/tibetan-pattern.avif')] bg-fixed bg-[length:400px] bg-repeat opacity-[0.06] pointer-events-none mix-blend-color-burn"></div>
-                
+
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4">
 
-            {/* Level 2 Tabs (Sub Categories) */}
-            {/* <div className="flex flex-col items-center mb-12">
+                    {/* Level 2 Tabs (Sub Categories) */}
+                    {/* <div className="flex flex-col items-center mb-12">
                 <h2 className="text-3xl font-bold text-white mb-6 tracking-tight relative inline-block">
                     {activeMainCategory.name}
                     <span className="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-12 h-1 bg-emerald-600 rounded-full"></span>
@@ -228,145 +228,153 @@ export default function Menu({ initialData }: MenuProps) {
                 </div>
             </div> */}
 
-            {/* Menu Content */}
-            {viewMode === 'grid' ? (
-                /* Grid View */
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-                    {activeSubCategory.items.map(item => (
-                        <div key={item.id} className="group relative bg-white rounded-[2rem] p-3 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-col h-full">
-                            <div className="relative w-full aspect-square md:aspect-[4/3] rounded-[1.5rem] overflow-hidden mb-4 bg-stone-100">
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                />
-                                {/* Price tag over the image */}
-                                <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-md text-amber-700 text-[10px] md:text-[11px] font-bold px-3 py-1.5 rounded-full shadow-lg border border-amber-100">
-                                    {item.variants && item.variants.length > 1 
-                                        ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price 
-                                        : item.price}
-                                </div>
-                                {/* Tags */}
-                                <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
-                                    {item.tags?.map(tag => (
-                                        <span key={tag} className="px-2 py-1 text-[8px] md:text-[9px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full border border-stone-200 shadow-sm">
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                            
-                            <div className="px-2 flex-grow flex flex-col">
-                                <div className="flex justify-between items-start mb-2">
-                                    <h3 className="text-xs md:text-base font-bold text-gray-900 group-hover:text-amber-700 transition-colors leading-tight">{item.name}</h3>
-                                </div>
-                                <p className="text-stone-500 font-medium text-[11px] md:text-xs leading-relaxed mb-4 flex-grow line-clamp-2">{item.description}</p>
-                                
-                                {item.variants && item.variants.length > 1 && (
-                                    <div className="mb-4 relative">
-                                        <select 
-                                            className="w-full bg-stone-50 text-gray-900 text-xs font-bold border border-stone-200 rounded-xl pl-4 pr-10 py-2.5 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
-                                            value={selectedVariants[item.id] || item.variants[0].variant_id}
-                                            onChange={(e) => setSelectedVariants({...selectedVariants, [item.id]: e.target.value})}
-                                        >
-                                            {item.variants.map(v => (
-                                                <option key={v.variant_id} value={v.variant_id} className="bg-white text-gray-900">
-                                                    {v.name}
-                                                </option>
+                    {/* Menu Content */}
+                    {viewMode === 'grid' ? (
+                        /* Grid View */
+                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 lg:gap-6">
+                            {activeSubCategory.items.map(item => (
+                                <div key={item.id} className="group relative bg-white rounded-[1.5rem] p-1.5 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-col aspect-square overflow-hidden">
+                                    
+                                    {/* Top 55%: Image */}
+                                    <div className="relative w-full h-[55%] rounded-[1rem] overflow-hidden mb-1.5 bg-stone-100 flex-shrink-0">
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                        />
+                                        {/* Tags over image */}
+                                        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                                            {item.tags?.slice(0, 1).map(tag => (
+                                                <span key={tag} className="px-2 py-0.5 text-[8px] font-black uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full shadow-sm">
+                                                    {tag}
+                                                </span>
                                             ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-amber-600">
-                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                         </div>
                                     </div>
-                                )}
 
-                                <button
-                                    onClick={(e) => handleAddToCart(item, e)}
-                                    className="w-full py-3 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white rounded-2xl transition-all duration-300 font-bold text-xs flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)] mt-auto border border-stone-200 hover:border-amber-500"
-                                >
-                                    <Plus className="w-4 h-4" />
-                                    <span>Add to Order</span>
-                                </button>
-                            </div>
+                                    {/* Bottom 45%: Content */}
+                                    <div className="flex-grow flex flex-col justify-between px-1.5 pb-1">
+                                        <div className="flex flex-col">
+                                            <h3 className="text-[10px] sm:text-[11px] md:text-sm font-bold text-gray-900 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1">
+                                                {item.name}
+                                            </h3>
+                                            {item.description && (
+                                                <p className="text-[8px] sm:text-[9px] md:text-[10px] text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2">
+                                                    {item.description}
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        <div className="flex items-center justify-between gap-1 w-full mt-auto pt-1">
+                                            {item.variants && item.variants.length > 1 ? (
+                                                <div className="relative flex-grow min-w-0">
+                                                    <select
+                                                        className="w-full bg-stone-50 text-[9px] md:text-[11px] font-bold text-amber-700 border border-stone-200 rounded-lg pl-2 pr-5 py-1 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
+                                                        value={selectedVariants[item.id] || item.variants[0].variant_id}
+                                                        onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
+                                                    >
+                                                        {item.variants.map(v => (
+                                                            <option key={v.variant_id} value={v.variant_id} className="text-gray-900">
+                                                                {v.name}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 pointer-events-none text-amber-600">
+                                                        <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <span className="text-amber-700 font-black text-[11px] md:text-xs tracking-tight">
+                                                    {item.price}
+                                                </span>
+                                            )}
+
+                                            <button
+                                                onClick={(e) => handleAddToCart(item, e)}
+                                                className="shrink-0 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 w-7 h-7 md:w-9 md:h-9 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
+                                            >
+                                                <Plus className="w-4 h-4" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            ) : (
-                /* List View */
-                <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-                    {activeSubCategory.items.map(item => (
-                        <div key={item.id} className="group bg-white rounded-3xl p-3 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-row gap-4 md:gap-6 items-center">
-                            <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0 bg-stone-100">
-                                <img
-                                    src={item.image}
-                                    alt={item.name}
-                                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                />
-                                <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                    {item.tags?.slice(0, 1).map(tag => (
-                                        <span key={tag} className="px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full border border-stone-200 shadow-sm">
-                                            {tag}
-                                        </span>
-                                    ))}
-                                </div>
-                            </div>
-                            
-                            <div className="flex-grow flex flex-col py-1 md:py-2 pr-2 md:pr-4">
-                                <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4 w-full">
-                                    <h3 className="text-xs md:text-base font-bold text-gray-900 group-hover:text-amber-700 transition-colors w-full md:w-auto">{item.name}</h3>
-                                    <span className="shrink-0 text-[10px] md:text-xs font-bold text-amber-700 tabular-nums bg-white/95 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-amber-100 shadow-sm inline-block">
-                                        {item.variants && item.variants.length > 1 
-                                            ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price 
-                                            : item.price}
-                                    </span>
-                                </div>
-                                <p className="text-stone-500 font-medium text-[11px] md:text-xs leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
-                                
-                                {item.variants && item.variants.length > 1 && (
-                                    <div className="mb-3 w-full relative mt-1">
-                                        <select 
-                                            className="w-full bg-stone-50 text-gray-900 text-[11px] md:text-xs font-bold border border-stone-200 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
-                                            value={selectedVariants[item.id] || item.variants[0].variant_id}
-                                            onChange={(e) => setSelectedVariants({...selectedVariants, [item.id]: e.target.value})}
-                                        >
-                                            {item.variants.map(v => (
-                                                <option key={v.variant_id} value={v.variant_id} className="bg-white text-gray-900">
-                                                    {v.name}
-                                                </option>
+                    ) : (
+                        /* List View */
+                        <div className="flex flex-col gap-4 max-w-4xl mx-auto">
+                            {activeSubCategory.items.map(item => (
+                                <div key={item.id} className="group bg-white rounded-3xl p-3 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-row gap-4 md:gap-6 items-center">
+                                    <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0 bg-stone-100">
+                                        <img
+                                            src={item.image}
+                                            alt={item.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                        />
+                                        <div className="absolute top-2 left-2 flex flex-col gap-1">
+                                            {item.tags?.slice(0, 1).map(tag => (
+                                                <span key={tag} className="px-2 py-1 text-[8px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full border border-stone-200 shadow-sm">
+                                                    {tag}
+                                                </span>
                                             ))}
-                                        </select>
-                                        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-amber-600">
-                                            <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                         </div>
                                     </div>
-                                )}
 
-                                <div className="flex justify-between items-end mt-auto">
-                                    <div className="hidden sm:flex gap-1.5">
-                                        {item.tags?.slice(1).map(tag => (
-                                            <span key={tag} className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-stone-50 text-stone-600 rounded-full border border-stone-200">
-                                                {tag}
+                                    <div className="flex-grow flex flex-col py-1 md:py-2 pr-2 md:pr-4">
+                                        <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4 w-full">
+                                            <h3 className="text-xs md:text-base font-bold text-gray-900 group-hover:text-amber-700 transition-colors w-full md:w-auto">{item.name}</h3>
+                                            <span className="shrink-0 text-[10px] md:text-xs font-bold text-amber-700 tabular-nums bg-white/95 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-amber-100 shadow-sm inline-block">
+                                                {item.variants && item.variants.length > 1
+                                                    ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price
+                                                    : item.price}
                                             </span>
-                                        ))}
+                                        </div>
+                                        <p className="text-stone-500 font-medium text-[11px] md:text-xs leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
+
+                                        {item.variants && item.variants.length > 1 && (
+                                            <div className="mb-3 w-full relative mt-1">
+                                                <select
+                                                    className="w-full bg-stone-50 text-gray-900 text-[11px] md:text-xs font-bold border border-stone-200 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
+                                                    value={selectedVariants[item.id] || item.variants[0].variant_id}
+                                                    onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
+                                                >
+                                                    {item.variants.map(v => (
+                                                        <option key={v.variant_id} value={v.variant_id} className="bg-white text-gray-900">
+                                                            {v.name}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-amber-600">
+                                                    <svg className="w-5 h-5 md:w-4 md:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex justify-between items-end mt-auto">
+                                            <div className="hidden sm:flex gap-1.5">
+                                                {item.tags?.slice(1).map(tag => (
+                                                    <span key={tag} className="px-2 py-1 text-[9px] font-bold uppercase tracking-wider bg-stone-50 text-stone-600 rounded-full border border-stone-200">
+                                                        {tag}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                            <button
+                                                onClick={(e) => handleAddToCart(item, e)}
+                                                className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
+                                            >
+                                                <Plus className="w-5 h-5 md:w-4 md:h-4" />
+                                                <span className="hidden md:inline">Add</span>
+                                            </button>
+                                        </div>
                                     </div>
-                                    <button
-                                        onClick={(e) => handleAddToCart(item, e)}
-                                        className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
-                                    >
-                                        <Plus className="w-5 h-5 md:w-4 md:h-4" />
-                                        <span className="hidden md:inline">Add</span>
-                                    </button>
                                 </div>
-                            </div>
+                            ))}
                         </div>
-                    ))}
-                </div>
-            )}
+                    )}
 
                 </div> {/* End inner layout wrapper */}
             </div> {/* End amber background block */}
-            
+
             {/* Global floating cart sits outside layout blocks entirely */}
             <button
                 onClick={() => setIsCartOpen(true)}
