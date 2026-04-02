@@ -255,7 +255,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     {/* Top 55%: Image */}
                                     <div className="relative w-full h-[55%] rounded-[1rem] overflow-hidden mb-1.5 bg-stone-100 flex-shrink-0">
                                         <img
-                                            src={item.image?.startsWith('http') ? `/_image?href=${encodeURIComponent(item.image)}&w=400&f=webp&q=80` : item.image}
+                                            src={item.image}
                                             alt={item.name}
                                             loading="lazy"
                                             decoding="async"
@@ -326,7 +326,7 @@ export default function Menu({ initialData }: MenuProps) {
                                 <div key={item.id} className="group bg-white rounded-3xl p-3 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-row gap-4 md:gap-6 items-center">
                                     <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0 bg-stone-100">
                                         <img
-                                            src={item.image?.startsWith('http') ? `/_image?href=${encodeURIComponent(item.image)}&w=400&f=webp&q=80` : item.image}
+                                            src={item.image}
                                             alt={item.name}
                                             loading="lazy"
                                             decoding="async"
