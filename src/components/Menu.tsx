@@ -216,7 +216,7 @@ export default function Menu({ initialData }: MenuProps) {
             {/* Matcha Content Era Begins -- Subsuming the menu grids down to the footer */}
             <div className="w-full   bg-emerald-600 relative pt-16 pb-24 shadow-[0_-15px_40px_rgba(76,90,67,0.2)] min-h-screen">
                 {/* Mobile-Safe Fixed Background: Using sticky inside an absolute container to bypass iOS Safari bg-fixed bugs */}
-                <div className="absolute bg-fixed inset-0 overflow-hidden pointer-events-none  bg-[url('/tibetan-pattern.avif')] bg-[length:200px] bg-repeat-x-y  opacity-[0.09] mix-blend-color-burn">
+                <div className="absolute bg-fixed inset-0 overflow-hidden pointer-events-none  bg-[url('/tibetan-pattern.avif')] bg-[length:200px] bg-repeat-x-y  opacity-[0.04] mix-blend-color-burn">
 
                 </div>
 
