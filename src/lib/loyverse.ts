@@ -79,10 +79,10 @@ export async function fetchMenuData(): Promise<MainCategory[]> {
           id: item.id, // React key
           item_id: item.id,
           name: item.item_name,
-          description: (item.description || '').replace(/<[^>]*>?/gm, ''),
+          description: (item.description || '').replace(/#[\w]+/g, '').replace(/<[^>]*>?/gm, '').trim(),
           price: displayPrice,
           image: item.image_url || 'https://placehold.co/400x300?text=' + encodeURIComponent(item.item_name),
-          tags: [],
+          tags: (item.description || '').match(/#[\w]+/g)?.map((t: string) => t.substring(1)) || [],
           variants
         };
       });

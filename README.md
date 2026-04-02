@@ -65,6 +65,13 @@ The customer menu is built dynamically from **Loyverse POS**.
 2. Generate a **Developer API Access Token**.
 3. Save it as an environment variable (`LOYVERSE_ACCESS_TOKEN`) in Netlify.
 
+### 🏷️ Interactive Menu Tagging (Today's Special)
+The Nomade web application intelligently reacts to metadata tags added directly from the Loyverse Dashboard. 
+To mark any item as the "Today's Special":
+1. Open the item in your **Loyverse Back Office**.
+2. Add the exact hashtag `#special` anywhere within its Description box (e.g. `Spicy handmade dish. #special`).
+3. The platform will automatically extract the hashtag, keeping the visible description seamless, and dynamically highlight the food card with a gorgeous amber overlay!
+
 ### Turso Database Setup
 To hook up Astro DB to your production Turso database:
 1. Create a database on Turso (`turso db create nomade-db`).

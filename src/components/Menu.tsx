@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
-import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info } from 'lucide-react';
+import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info, Flame } from 'lucide-react';
 
 interface CartItem {
     item: MenuItem;
@@ -12,9 +12,9 @@ interface MenuProps {
 }
 
 export default function Menu({ initialData }: MenuProps) {
-    const [activeMainId, setActiveMainId] = useState(initialData[0].id);
-    const activeMainCategory = initialData.find(c => c.id === activeMainId) || initialData[0];
-    const [activeSubId, setActiveSubId] = useState(activeMainCategory.subCategories[0].id);
+    const [activeMainId, setActiveMainId] = useState<string | null>(null);
+    const activeMainCategory = activeMainId ? initialData.find(c => c.id === activeMainId) || initialData[0] : initialData[0];
+    const [activeSubId, setActiveSubId] = useState<string | null>(null);
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [cartItems, setCartItems] = useState<CartItem[]>([]);
     const [isCartOpen, setIsCartOpen] = useState(false);
@@ -22,6 +22,16 @@ export default function Menu({ initialData }: MenuProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitMessage, setSubmitMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null);
     const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+    const [tableNumber, setTableNumber] = useState<string | null>(null);
+
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const tableId = params.get('table');
+            if (tableId) setTableNumber(tableId);
+        }
+    }, []);
 
     const triggerFlyAnimation = (imageSrc: string, startX: number, startY: number, endX: number, endY: number) => {
         const flyEl = document.createElement('img');
@@ -158,7 +168,16 @@ export default function Menu({ initialData }: MenuProps) {
         }
     };
 
-    const activeSubCategory = activeMainCategory.subCategories.find(s => s.id === activeSubId) || activeMainCategory.subCategories[0];
+    const activeSubCategory = activeMainId ? (activeMainCategory.subCategories.find(s => s.id === activeSubId) || activeMainCategory.subCategories[0]) : null;
+
+    const allItems = initialData.flatMap(m => m.subCategories.flatMap(s => s.items));
+    const todaysSpecial = allItems.find(i =>
+        i.name.toLowerCase().includes('special') ||
+        i.tags?.some((t: string) => t.toLowerCase().includes('special'))
+    );
+
+    // Resolve the items to render globally.
+    const activeItems = activeMainId === null ? allItems : (activeSubCategory?.items || []);
 
     return (
         <div className="w-full relative">
@@ -181,8 +200,15 @@ export default function Menu({ initialData }: MenuProps) {
                 </button>
             </div>
 
-            {/* About Us Toggle - Top Right */}
-            <div className="absolute -top-12 right-4 sm:-top-8 sm:right-8 z-20 flex">
+            {/* Header Right Content (Table Number & About) */}
+            <div className="absolute -top-12 right-4 sm:-top-8 sm:right-8 z-20 flex items-center gap-2 sm:gap-3">
+                {tableNumber && (
+                    <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-emerald-200 shadow-sm transition-all duration-300">
+                        <span className="text-[10px] sm:text-xs uppercase font-black tracking-widest opacity-70">Table</span>
+                        <span className="text-sm sm:text-base font-black">{tableNumber}</span>
+                    </div>
+                )}
+                
                 <button
                     onClick={() => setIsAboutOpen(true)}
                     className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-all duration-300 hover:scale-105 bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 shadow-sm"
@@ -197,10 +223,14 @@ export default function Menu({ initialData }: MenuProps) {
             <div className="relative z-20 flex justify-center -mb-7 sm:-mb-8">
 
                 <div className="inline-flex bg-white/95 p-1.5 rounded-full shadow-lg shadow-amber-900/10 border border-stone-100 backdrop-blur-md overflow-x-auto max-w-full">
+                    {/* Map Main Categories */}
                     {initialData.map(category => (
                         <button
                             key={category.id}
-                            onClick={() => handleMainChange(category.id)}
+                            onClick={() => {
+                                setActiveMainId(category.id);
+                                if (category.subCategories.length > 0) setActiveSubId(category.subCategories[0].id);
+                            }}
                             className={`px-6 py-2 sm:px-8 sm:py-3 rounded-full text-sm sm:text-lg font-bold transition-all duration-300 whitespace-nowrap
                 ${activeMainId === category.id
                                     ? 'bg-amber-600 text-white shadow-md shadow-amber-900/30'
@@ -245,156 +275,284 @@ export default function Menu({ initialData }: MenuProps) {
                 </div>
             </div> */}
 
-                    {/* Menu Content */}
-                    {viewMode === 'grid' ? (
-                        /* Grid View */
-                        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 lg:gap-6">
-                            {activeSubCategory.items.map(item => (
-                                <div key={item.id} className="group relative bg-white rounded-[1.5rem] p-1.5 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-col aspect-square overflow-hidden">
+                    {/* Today's Special Showcase Banner -> Now a tiny functional button */}
+                    {activeMainId === null && todaysSpecial && (
+                        <div 
+                            onClick={() => setSelectedItem(todaysSpecial)}
+                            className="w-full max-w-md mx-auto mb-8 sm:mb-10 relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 active:scale-95"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-r from-amber-400 to-amber-600 rounded-2xl transform rotate-1 opacity-50 group-hover:rotate-2 transition-transform duration-500"></div>
+                            <div className="relative bg-white rounded-2xl p-2 border border-amber-400/50 shadow-lg flex items-center gap-4 overflow-hidden">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl pointer-events-none mix-blend-overlay"></div>
+                                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden shrink-0 bg-stone-100">
+                                    <img src={todaysSpecial.image} alt={todaysSpecial.name} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                </div>
+                                <div className="flex-grow flex flex-col pt-1">
+                                    <div className="flex items-center gap-1.5 mb-1">
+                                        <Star size={12} className="fill-amber-500 text-amber-500 animate-pulse" />
+                                        <span className="text-[10px] sm:text-xs font-black uppercase tracking-widest text-amber-600">Today's Special</span>
+                                    </div>
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-900 line-clamp-1">{todaysSpecial.name}</h3>
+                                </div>
+                                <div className="pr-3 text-amber-500">
+                                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" /></svg>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                                    {/* Top 55%: Image */}
-                                    <div className="relative w-full h-[55%] rounded-[1rem] overflow-hidden mb-1.5 bg-stone-100 flex-shrink-0">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            loading="lazy"
-                                            decoding="async"
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
-                                        />
-                                        {/* Tags over image */}
-                                        <div className="absolute top-2 left-2 flex flex-wrap gap-1">
-                                            {item.tags?.slice(0, 1).map(tag => (
-                                                <span key={tag} className="px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full shadow-sm">
-                                                    {tag}
-                                                </span>
-                                            ))}
+                    {/* Menu Content */}
+                    {activeItems && activeItems.length > 0 && (
+                        viewMode === 'grid' ? (
+                            /* Grid View */
+                            <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 lg:gap-6 pb-12">
+                                {activeItems.map(item => (
+                                    <div key={item.id} className="group relative bg-white rounded-[1.5rem] p-1.5 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-col aspect-square overflow-hidden">
+
+                                        {/* Top 55%: Image */}
+                                        <div className="relative w-full h-[55%] rounded-[1rem] overflow-hidden mb-1.5 bg-stone-100 flex-shrink-0">
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                                            />
+                                            {/* Tags over image */}
+                                            <div className="absolute top-2 left-2 flex flex-wrap gap-1">
+                                                {todaysSpecial && item.id === todaysSpecial.id && (
+                                                    <span className="px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider bg-amber-500 text-white rounded-full shadow-lg shadow-amber-500/40 flex items-center gap-1">
+                                                        <Star size={10} className="fill-white animate-pulse" />
+                                                        Today's Special
+                                                    </span>
+                                                )}
+                                                {item.tags?.slice(0, 1).map((tag: string) => (
+                                                    tag.toLowerCase() !== 'special' ? (
+                                                        <span key={tag} className={`px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-0.5 ${
+                                                            tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-600'
+                                                        }`}>
+                                                            {tag.toLowerCase() === 'spicy' && <Flame size={10} className="fill-white" />}
+                                                            {tag}
+                                                        </span>
+                                                    ) : null
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        {/* Bottom 45%: Content */}
+                                        <div className="flex-grow flex flex-col justify-between px-1.5 pb-1">
+                                            <div className="flex flex-col">
+                                                <h3 className="text-[10px] sm:text-[11px] md:text-sm lg:text-base xl:text-lg font-bold text-emerald-700 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1 ">
+                                                    {item.name}
+                                                </h3>
+                                                {item.description && (
+                                                    <p className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2">
+                                                        {item.description}
+                                                    </p>
+                                                )}
+                                            </div>
+
+                                            <div className="flex items-center justify-between gap-1 w-full mt-auto pt-1">
+                                                {item.variants && item.variants.length > 1 ? (
+                                                    <div className="relative flex-grow min-w-0">
+                                                        <select
+                                                            className="w-full bg-stone-50 text-[9px] md:text-[11px] lg:text-[13px] xl:text-sm font-bold text-amber-700 border border-stone-200 rounded-lg pl-2 pr-5 py-1 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
+                                                            value={selectedVariants[item.id] || item.variants[0].variant_id}
+                                                            onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
+                                                        >
+                                                            {item.variants.map((v: any) => (
+                                                                <option key={v.variant_id} value={v.variant_id} className="text-gray-900">
+                                                                    {v.name}
+                                                                </option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 pointer-events-none text-amber-600">
+                                                            <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-amber-700 font-black text-[11px] md:text-xs lg:text-sm xl:text-base tracking-tight">
+                                                        {item.price}
+                                                    </span>
+                                                )}
+
+                                                <button
+                                                    onClick={(e) => handleAddToCart(item, e)}
+                                                    className="shrink-0 bg-emerald-400 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
+                                                >
+                                                    <Plus className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
-
-                                    {/* Bottom 45%: Content */}
-                                    <div className="flex-grow flex flex-col justify-between px-1.5 pb-1">
-                                        <div className="flex flex-col">
-                                            <h3 className="text-[10px] sm:text-[11px] md:text-sm lg:text-base xl:text-lg font-bold text-emerald-700 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1 ">
-                                                {item.name}
-                                            </h3>
-                                            {item.description && (
-                                                <p className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2">
-                                                    {item.description}
-                                                </p>
-                                            )}
+                                ))}
+                            </div>
+                        ) : (
+                            /* List View */
+                            <div className="flex flex-col gap-4 max-w-4xl mx-auto">
+                                {activeItems.map(item => (
+                                    <div key={item.id} className="group bg-white rounded-3xl p-3 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-row gap-4 md:gap-6 items-center">
+                                        <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0 bg-stone-100">
+                                            <img
+                                                src={item.image}
+                                                alt={item.name}
+                                                loading="lazy"
+                                                decoding="async"
+                                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                            />
+                                            <div className="absolute top-2 left-2 flex flex-col items-start gap-1">
+                                                {todaysSpecial && item.id === todaysSpecial.id && (
+                                                    <span className="px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider bg-amber-500 text-white rounded-full shadow-lg shadow-amber-500/40 flex items-center gap-1">
+                                                        <Star size={10} className="fill-white animate-pulse" />
+                                                        Special
+                                                    </span>
+                                                )}
+                                                {item.tags?.slice(0, 1).map((tag: string) => (
+                                                    tag.toLowerCase() !== 'special' ? (
+                                                        <span key={tag} className={`px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full border shadow-sm inline-flex items-center gap-1 ${
+                                                            tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white border-red-400 shadow-red-500/40' : 'bg-white/95 text-stone-600 border-stone-200'
+                                                        }`}>
+                                                            {tag.toLowerCase() === 'spicy' && <Flame size={12} className="fill-white" />}
+                                                            {tag}
+                                                        </span>
+                                                    ) : null
+                                                ))}
+                                            </div>
                                         </div>
 
-                                        <div className="flex items-center justify-between gap-1 w-full mt-auto pt-1">
-                                            {item.variants && item.variants.length > 1 ? (
-                                                <div className="relative flex-grow min-w-0">
+                                        <div className="flex-grow flex flex-col py-1 md:py-2 pr-2 md:pr-4">
+                                            <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4 w-full">
+                                                <h3 className="text-xs md:text-base lg:text-xl xl:text-2xl font-bold text-gray-900 group-hover:text-amber-700 transition-colors w-full md:w-auto">{item.name}</h3>
+                                                <span className="shrink-0 text-[10px] md:text-xs lg:text-sm xl:text-base font-bold text-amber-700 tabular-nums bg-white/95 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-amber-100 shadow-sm inline-block">
+                                                    {item.variants && item.variants.length > 1
+                                                        ? (item.variants.find((v: any) => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price
+                                                        : item.price}
+                                                </span>
+                                            </div>
+                                            <p className="text-stone-500 font-medium text-[11px] md:text-xs lg:text-sm xl:text-base leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
+
+                                            {item.variants && item.variants.length > 1 && (
+                                                <div className="mb-3 w-full relative mt-1">
                                                     <select
-                                                        className="w-full bg-stone-50 text-[9px] md:text-[11px] lg:text-[13px] xl:text-sm font-bold text-amber-700 border border-stone-200 rounded-lg pl-2 pr-5 py-1 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
+                                                        className="w-full bg-stone-50 text-gray-900 text-[11px] md:text-xs lg:text-sm xl:text-base font-bold border border-stone-200 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
                                                         value={selectedVariants[item.id] || item.variants[0].variant_id}
                                                         onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
                                                     >
-                                                        {item.variants.map(v => (
-                                                            <option key={v.variant_id} value={v.variant_id} className="text-gray-900">
+                                                        {item.variants.map((v: any) => (
+                                                            <option key={v.variant_id} value={v.variant_id} className="bg-white text-gray-900">
                                                                 {v.name}
                                                             </option>
                                                         ))}
                                                     </select>
-                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-1.5 pointer-events-none text-amber-600">
-                                                        <svg className="w-3 h-3 md:w-4 md:h-4 lg:w-5 lg:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                                                    <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-amber-600">
+                                                        <svg className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                                     </div>
                                                 </div>
-                                            ) : (
-                                                <span className="text-amber-700 font-black text-[11px] md:text-xs lg:text-sm xl:text-base tracking-tight">
-                                                    {item.price}
-                                                </span>
                                             )}
 
-                                            <button
-                                                onClick={(e) => handleAddToCart(item, e)}
-                                                className="shrink-0 bg-emerald-400 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
-                                            >
-                                                <Plus className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    ) : (
-                        /* List View */
-                        <div className="flex flex-col gap-4 max-w-4xl mx-auto">
-                            {activeSubCategory.items.map(item => (
-                                <div key={item.id} className="group bg-white rounded-3xl p-3 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-row gap-4 md:gap-6 items-center">
-                                    <div className="relative w-28 h-28 md:w-36 md:h-36 rounded-2xl overflow-hidden shrink-0 bg-stone-100">
-                                        <img
-                                            src={item.image}
-                                            alt={item.name}
-                                            loading="lazy"
-                                            decoding="async"
-                                            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                                        />
-                                        <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                            {item.tags?.slice(0, 1).map(tag => (
-                                                <span key={tag} className="px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md text-stone-600 rounded-full border border-stone-200 shadow-sm">
-                                                    {tag}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex-grow flex flex-col py-1 md:py-2 pr-2 md:pr-4">
-                                        <div className="flex flex-col md:flex-row justify-start md:justify-between items-start mb-1 md:mb-2 gap-2 md:gap-4 w-full">
-                                            <h3 className="text-xs md:text-base lg:text-xl xl:text-2xl font-bold text-gray-900 group-hover:text-amber-700 transition-colors w-full md:w-auto">{item.name}</h3>
-                                            <span className="shrink-0 text-[10px] md:text-xs lg:text-sm xl:text-base font-bold text-amber-700 tabular-nums bg-white/95 backdrop-blur-md px-3 py-1 md:px-4 md:py-1.5 rounded-full border border-amber-100 shadow-sm inline-block">
-                                                {item.variants && item.variants.length > 1
-                                                    ? (item.variants.find(v => v.variant_id === (selectedVariants[item.id] || item.variants![0].variant_id)) || item.variants[0]).price
-                                                    : item.price}
-                                            </span>
-                                        </div>
-                                        <p className="text-stone-500 font-medium text-[11px] md:text-xs lg:text-sm xl:text-base leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
-
-                                        {item.variants && item.variants.length > 1 && (
-                                            <div className="mb-3 w-full relative mt-1">
-                                                <select
-                                                    className="w-full bg-stone-50 text-gray-900 text-[11px] md:text-xs lg:text-sm xl:text-base font-bold border border-stone-200 rounded-xl pl-3 pr-10 py-2 outline-none appearance-none cursor-pointer hover:bg-white hover:border-amber-300 transition-all shadow-sm"
-                                                    value={selectedVariants[item.id] || item.variants[0].variant_id}
-                                                    onChange={(e) => setSelectedVariants({ ...selectedVariants, [item.id]: e.target.value })}
-                                                >
-                                                    {item.variants.map(v => (
-                                                        <option key={v.variant_id} value={v.variant_id} className="bg-white text-gray-900">
-                                                            {v.name}
-                                                        </option>
+                                            <div className="flex justify-between items-end mt-auto">
+                                                <div className="hidden sm:flex gap-1.5">
+                                                    {item.tags?.slice(1).map((tag: string) => (
+                                                        <span key={tag} className="px-2 py-1 text-[9px] lg:text-[11px] xl:text-xs font-bold uppercase tracking-wider bg-stone-50 text-stone-600 rounded-full border border-stone-200">
+                                                            {tag}
+                                                        </span>
                                                     ))}
-                                                </select>
-                                                <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-amber-600">
-                                                    <svg className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
                                                 </div>
+                                                <button
+                                                    onClick={(e) => handleAddToCart(item, e)}
+                                                    className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 lg:px-6 lg:py-3 xl:px-8 xl:py-4 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
+                                                >
+                                                    <Plus className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                                                    <span className="hidden md:inline lg:text-lg">Add</span>
+                                                </button>
                                             </div>
-                                        )}
-
-                                        <div className="flex justify-between items-end mt-auto">
-                                            <div className="hidden sm:flex gap-1.5">
-                                                {item.tags?.slice(1).map(tag => (
-                                                    <span key={tag} className="px-2 py-1 text-[9px] lg:text-[11px] xl:text-xs font-bold uppercase tracking-wider bg-stone-50 text-stone-600 rounded-full border border-stone-200">
-                                                        {tag}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                            <button
-                                                onClick={(e) => handleAddToCart(item, e)}
-                                                className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 lg:px-6 lg:py-3 xl:px-8 xl:py-4 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
-                                            >
-                                                <Plus className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                                                <span className="hidden md:inline lg:text-lg">Add</span>
-                                            </button>
                                         </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )
                     )}
 
                 </div> {/* End inner layout wrapper */}
             </div> {/* End amber background block */}
+
+            {/* Detailed Item Modal */}
+            {selectedItem && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 opacity-100 transition-opacity">
+                    {/* Backdrop */}
+                    <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedItem(null)}></div>
+                    
+                    {/* Modal Container */}
+                    <div className="relative bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh] md:max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
+                        {/* Close Button */}
+                        <button 
+                            onClick={() => setSelectedItem(null)}
+                            className="absolute top-4 right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-gray-900 hover:bg-white hover:text-red-500 transition-colors shadow-sm"
+                        >
+                            <X size={20} />
+                        </button>
+                        
+                        {/* Huge Image */}
+                        <div className="w-full h-56 sm:h-72 bg-stone-100 relative shrink-0">
+                            <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
+                            <div className="absolute top-4 left-4 flex flex-wrap gap-1.5">
+                                {selectedItem.tags?.map((tag: string) => (
+                                    <span key={tag} className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-1 ${
+                                        tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-700'
+                                    }`}>
+                                        {tag.toLowerCase() === 'spicy' && <Flame size={14} className="fill-white" />}
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                        
+                        {/* Detailed Content */}
+                        <div className="p-5 sm:p-7 overflow-y-auto flex flex-col hide-scrollbar">
+                            <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight mb-3 tracking-tight">{selectedItem.name}</h2>
+                            {selectedItem.description && (
+                                <p className="text-xs sm:text-sm text-stone-500 mb-6 leading-relaxed font-medium">{selectedItem.description}</p>
+                            )}
+                            
+                            {/* Variant Configuration */}
+                            {selectedItem.variants && selectedItem.variants.length > 1 && (
+                                <div className="mb-6 bg-stone-50 p-4 rounded-3xl border border-stone-100">
+                                    <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-3">Customization</label>
+                                    <select
+                                        className="w-full bg-white border border-stone-200 text-gray-900 text-sm font-bold p-3.5 rounded-2xl focus:border-amber-400 focus:ring-4 focus:ring-amber-400/10 outline-none transition-all shadow-sm cursor-pointer appearance-none"
+                                        value={selectedVariants[selectedItem.id] || selectedItem.variants[0].variant_id}
+                                        onChange={(e) => setSelectedVariants({ ...selectedVariants, [selectedItem.id]: e.target.value })}
+                                        style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23d97706'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
+                                    >
+                                        {selectedItem.variants.map((v: any) => (
+                                            <option key={v.variant_id} value={v.variant_id}>{v.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            )}
+                            
+                            {/* Add to Cart Floating Trigger */}
+                            <div className="mt-auto pt-6 flex items-center justify-between border-t border-stone-50">
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider mb-0.5">Total Price</span>
+                                    <span className="text-3xl sm:text-4xl font-black text-emerald-600 tracking-tighter">
+                                        {selectedItem.variants && selectedItem.variants.length > 1
+                                            ? (selectedItem.variants.find((v: any) => v.variant_id === (selectedVariants[selectedItem.id] || selectedItem.variants![0].variant_id)) || selectedItem.variants[0]).price
+                                            : selectedItem.price}
+                                    </span>
+                                </div>
+                                <button 
+                                    onClick={(e) => { handleAddToCart(selectedItem, e); setSelectedItem(null); }}
+                                    className="bg-amber-500 hover:bg-gray-900 text-white px-8 py-4 sm:py-4 rounded-3xl sm:rounded-[2rem] text-sm sm:text-base font-black shadow-xl shadow-amber-500/30 hover:shadow-gray-900/30 transition-all duration-300 flex items-center gap-2 transform active:scale-95"
+                                >
+                                    <Plus strokeWidth={3} size={18} />
+                                    Add Order
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Global floating cart sits outside layout blocks entirely */}
             <button
