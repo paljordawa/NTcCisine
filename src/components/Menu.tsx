@@ -195,6 +195,7 @@ export default function Menu({ initialData }: MenuProps) {
 
             {/* Level 1 Tabs (Main Categories) Straddling the Color Horizon */}
             <div className="relative z-20 flex justify-center -mb-7 sm:-mb-8">
+
                 <div className="inline-flex bg-white/95 p-1.5 rounded-full shadow-lg shadow-amber-900/10 border border-stone-100 backdrop-blur-md overflow-x-auto max-w-full">
                     {initialData.map(category => (
                         <button
@@ -213,10 +214,10 @@ export default function Menu({ initialData }: MenuProps) {
             </div>
 
             {/* Matcha Content Era Begins -- Subsuming the menu grids down to the footer */}
-            <div className="w-full bg-emerald-600 relative pt-16 pb-24 shadow-[0_-15px_40px_rgba(76,90,67,0.2)] min-h-screen">
+            <div className="w-full   bg-emerald-600 relative pt-16 pb-24 shadow-[0_-15px_40px_rgba(76,90,67,0.2)] min-h-screen">
                 {/* Mobile-Safe Fixed Background: Using sticky inside an absolute container to bypass iOS Safari bg-fixed bugs */}
-                <div className="absolute inset-0 overflow-hidden pointer-events-none">
-                    <div className="sticky top-0 w-full h-screen bg-[url('/tibetan-pattern.avif')] bg-[length:400px] bg-repeat opacity-[0.06] mix-blend-color-burn"></div>
+                <div className="absolute bg-fixed inset-0 overflow-hidden pointer-events-none  bg-[url('/tibetan-pattern.avif')] bg-[length:200px] bg-repeat-x-y  opacity-[0.09] mix-blend-color-burn">
+
                 </div>
 
                 <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-4">
@@ -250,7 +251,7 @@ export default function Menu({ initialData }: MenuProps) {
                         <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-5 lg:gap-6">
                             {activeSubCategory.items.map(item => (
                                 <div key={item.id} className="group relative bg-white rounded-[1.5rem] p-1.5 border border-emerald-500/30 hover:border-emerald-400 transition-all duration-500 shadow-xl shadow-emerald-900/20 hover:shadow-2xl hover:shadow-emerald-900/40 flex flex-col aspect-square overflow-hidden">
-                                    
+
                                     {/* Top 55%: Image */}
                                     <div className="relative w-full h-[55%] rounded-[1rem] overflow-hidden mb-1.5 bg-stone-100 flex-shrink-0">
                                         <img
@@ -271,7 +272,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     {/* Bottom 45%: Content */}
                                     <div className="flex-grow flex flex-col justify-between px-1.5 pb-1">
                                         <div className="flex flex-col">
-                                            <h3 className="text-[10px] sm:text-[11px] md:text-sm lg:text-base xl:text-lg font-bold text-gray-900 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1">
+                                            <h3 className="text-[10px] sm:text-[11px] md:text-sm lg:text-base xl:text-lg font-bold text-emerald-700 group-hover:text-amber-700 transition-colors leading-[1.2] line-clamp-1 ">
                                                 {item.name}
                                             </h3>
                                             {item.description && (
@@ -307,7 +308,7 @@ export default function Menu({ initialData }: MenuProps) {
 
                                             <button
                                                 onClick={(e) => handleAddToCart(item, e)}
-                                                className="shrink-0 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
+                                                className="shrink-0 bg-emerald-400 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
                                             >
                                                 <Plus className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
                                             </button>
@@ -525,16 +526,16 @@ export default function Menu({ initialData }: MenuProps) {
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6">
                     {/* Backdrop */}
                     <div
-                        className="absolute inset-0 bg-stone-900/40 backdrop-blur-md transition-opacity"
+                        className="absolute inset-0 bg-emerald-900/40 backdrop-blur-md transition-opacity"
                         onClick={() => setIsAboutOpen(false)}
                     ></div>
-                    
+
                     {/* Modal Content */}
                     <div className="relative bg-white rounded-[2rem] shadow-2xl w-full max-w-xl overflow-hidden transform transition-all">
                         {/* Header Banner */}
                         <div className="h-40 sm:h-52 w-full bg-[url('/hero-bg.jpg')] bg-cover bg-center relative bg-stone-200">
                             <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/40 to-transparent"></div>
-                            
+
                             <button
                                 onClick={() => setIsAboutOpen(false)}
                                 className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white text-white hover:text-gray-900 rounded-full backdrop-blur-md transition-colors shadow-lg"
@@ -547,17 +548,17 @@ export default function Menu({ initialData }: MenuProps) {
                                 <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px] sm:text-xs drop-shadow-md">Authentic Himalayan Flavors</p>
                             </div>
                         </div>
-                        
+
                         <div className="p-6 sm:p-8 bg-stone-50">
                             <div className="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed font-medium">
                                 <p>
-                                    Welcome to Nomade! We bring you the authentic taste of the Himalayas right here. 
-                                    Our dishes are crafted with traditional recipes passed down through generations, 
+                                    Welcome to Nomade! We bring you the authentic taste of the Himalayas right here.
+                                    Our dishes are crafted with traditional recipes passed down through generations,
                                     using the freshest ingredients and bespoke spices.
                                 </p>
                                 <p>
-                                    Whether you're craving comforting Momo (dumplings), hearty Thukpa, or rich curries, 
-                                    our kitchen is dedicated to providing you with an unforgettable culinary journey. 
+                                    Whether you're craving comforting Momo (dumplings), hearty Thukpa, or rich curries,
+                                    our kitchen is dedicated to providing you with an unforgettable culinary journey.
                                     Thank you for dining with us!
                                 </p>
                             </div>
@@ -565,15 +566,15 @@ export default function Menu({ initialData }: MenuProps) {
                             <div className="mt-8 pt-6 border-t border-stone-200 grid grid-cols-2 gap-6">
                                 <div>
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Location</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">1003 Lausanne<br/>Switzerland</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">1003 Lausanne<br />Switzerland</p>
                                 </div>
                                 <div className="text-right sm:text-left">
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Hours</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Mon-Sat: 11:30 - 22:00<br/>Sun: Closed</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Mon-Sat: 11:30 - 22:00<br />Sun: Closed</p>
                                 </div>
                                 <div className="col-span-2">
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Contact</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">info@nomadecuisine.ch<br/>+41 21 123 45 67</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">info@nomadecuisine.ch<br />+41 21 123 45 67</p>
                                 </div>
                             </div>
                         </div>
