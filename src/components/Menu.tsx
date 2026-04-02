@@ -257,6 +257,8 @@ export default function Menu({ initialData }: MenuProps) {
                                         <img
                                             src={item.image}
                                             alt={item.name}
+                                            loading="lazy"
+                                            decoding="async"
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                                         />
                                         {/* Tags over image */}
@@ -326,6 +328,8 @@ export default function Menu({ initialData }: MenuProps) {
                                         <img
                                             src={item.image}
                                             alt={item.name}
+                                            loading="lazy"
+                                            decoding="async"
                                             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                                         />
                                         <div className="absolute top-2 left-2 flex flex-col gap-1">
