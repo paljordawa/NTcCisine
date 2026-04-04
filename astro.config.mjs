@@ -1,4 +1,5 @@
 import { defineConfig, envField } from 'astro/config';
+import { loadEnv } from 'vite';
 
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
@@ -6,11 +7,13 @@ import cloudflare from '@astrojs/cloudflare';
 
 import db from '@astrojs/db';
 
+const { ASTRO_DB_REMOTE_URL, ASTRO_DB_APP_TOKEN } = loadEnv(process.env.NODE_ENV || 'production', process.cwd(), "");
+
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
   adapter: cloudflare({
-    imageService: 'compile',
+    imageService: 'passthrough',
   }),
   env: {
     schema: {
@@ -18,7 +21,11 @@ export default defineConfig({
     }
   },
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    define: {
+      "process.env.ASTRO_DB_REMOTE_URL": JSON.stringify(ASTRO_DB_REMOTE_URL),
+      "process.env.ASTRO_DB_APP_TOKEN": JSON.stringify(ASTRO_DB_APP_TOKEN),
+    }
   },
   image: {
     remotePatterns: [{ protocol: 'https' }]
