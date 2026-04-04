@@ -9,12 +9,10 @@ import db from '@astrojs/db';
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare({ mode: 'directory' }),
+  adapter: cloudflare(),
   env: {
     schema: {
       LOYVERSE_ACCESS_TOKEN: envField.string({ context: 'server', access: 'secret' }),
-      ASTRO_DB_REMOTE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
-      ASTRO_DB_APP_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
     }
   },
   vite: {

@@ -1,6 +1,7 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
 import { db, Order, eq } from 'astro:db';
+import { LOYVERSE_ACCESS_TOKEN } from 'astro:env/server';
 
 export const POST: APIRoute = async ({ request }) => {
     try {
@@ -19,7 +20,7 @@ export const POST: APIRoute = async ({ request }) => {
         const activeTotal = typeof modifiedCartTotal === 'number' ? modifiedCartTotal : order.cartTotal;
 
         if (action === 'accept' && activeCartItems.length > 0) {
-            const loyverseToken = import.meta.env.LOYVERSE_ACCESS_TOKEN;
+            const loyverseToken = LOYVERSE_ACCESS_TOKEN;
             const headers = { 'Content-Type': 'application/json', 'Authorization': `Bearer ${loyverseToken}` };
 
             const [storeRes, paymentRes] = await Promise.all([
