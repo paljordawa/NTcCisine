@@ -9,7 +9,9 @@ import db from '@astrojs/db';
 // https://astro.build/config
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare(),
+  adapter: cloudflare({
+    imageService: 'compile',
+  }),
   env: {
     schema: {
       LOYVERSE_ACCESS_TOKEN: envField.string({ context: 'server', access: 'secret' }),
