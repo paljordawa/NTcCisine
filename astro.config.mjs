@@ -1,5 +1,4 @@
-// @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig, envField } from 'astro/config';
 
 import tailwindcss from '@tailwindcss/vite';
 import react from '@astrojs/react';
@@ -11,6 +10,13 @@ import db from '@astrojs/db';
 export default defineConfig({
   output: 'server',
   adapter: cloudflare({ mode: 'directory' }),
+  env: {
+    schema: {
+      LOYVERSE_ACCESS_TOKEN: envField.string({ context: 'server', access: 'secret' }),
+      ASTRO_DB_REMOTE_URL: envField.string({ context: 'server', access: 'secret', optional: true }),
+      ASTRO_DB_APP_TOKEN: envField.string({ context: 'server', access: 'secret', optional: true }),
+    }
+  },
   vite: {
     plugins: [tailwindcss()]
   },
