@@ -24,5 +24,5 @@ export default defineConfig({
     remotePatterns: [{ protocol: 'https' }]
   },
 
-  integrations: [react(), db()]
+  integrations: [react(), db({ mode: 'web' })]
 });
