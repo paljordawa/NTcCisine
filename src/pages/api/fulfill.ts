@@ -70,7 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
             }
         }
 
-        const newStatus = action === 'accept' ? 'accepted' : 'rejected';
+        const newStatus = action === 'accept' ? 'accepted' : (action === 'ready' ? 'ready' : 'rejected');
         
         await db.update(Order).set({ 
             status: newStatus,

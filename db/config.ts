@@ -5,13 +5,20 @@ const Order = defineTable({
     id: column.text({ primaryKey: true }),
     cartItems: column.json(),
     cartTotal: column.number(),
-    status: column.text({ default: 'pending' }), // 'pending', 'accepted', 'rejected'
+    status: column.text({ default: 'pending' }), // 'pending', 'accepted', 'ready', 'rejected'
     createdAt: column.date(),
     tableNumber: column.text({ optional: true }),
   }
 });
 
+const StoreSettings = defineTable({
+    columns: {
+        id: column.number({ primaryKey: true }),
+        isOrderingPaused: column.boolean({ default: false })
+    }
+});
+
 // https://astro.build/db/config
 export default defineDb({
-  tables: { Order }
+  tables: { Order, StoreSettings }
 });

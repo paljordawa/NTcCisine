@@ -1,19 +1,19 @@
 export const prerender = false;
 import type { APIRoute } from 'astro';
-import { db, Order, eq, not } from 'astro:db';
+import { db, Order, eq, not, inArray } from 'astro:db';
 
 export const GET: APIRoute = async () => {
     try {
-        const pendingOrders = await db.select().from(Order).where(eq(Order.status, 'pending'));
+        const liveOrders = await db.select().from(Order).where(inArray(Order.status, ['pending', 'accepted']));
         
-        // Use raw SQL operator to find non-pending rows since `not` helper can sometimes be finicky in older versions
-        const historyOrders = await db.select().from(Order).where(not(eq(Order.status, 'pending')));
+        // Use not(inArray(...)) to fetch everything else as history
+        const historyOrders = await db.select().from(Order).where(not(inArray(Order.status, ['pending', 'accepted'])));
         
         // Simple manual sort since we are limited without importing desc()
         historyOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
         const recentHistory = historyOrders.slice(0, 50);
 
-        return new Response(JSON.stringify({ orders: pendingOrders, history: recentHistory }), { 
+        return new Response(JSON.stringify({ orders: liveOrders, history: recentHistory }), { 
             status: 200, 
             headers: { 'Content-Type': 'application/json' } 
         });
