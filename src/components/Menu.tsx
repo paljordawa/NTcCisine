@@ -208,7 +208,7 @@ export default function Menu({ initialData }: MenuProps) {
                         <span className="text-sm sm:text-base font-black">{tableNumber}</span>
                     </div>
                 )}
-                
+
                 <button
                     onClick={() => setIsAboutOpen(true)}
                     className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-all duration-300 hover:scale-105 bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 shadow-sm"
@@ -277,7 +277,7 @@ export default function Menu({ initialData }: MenuProps) {
 
                     {/* Today's Special Showcase Banner -> Now a tiny functional button */}
                     {activeMainId === null && todaysSpecial && (
-                        <div 
+                        <div
                             onClick={() => setSelectedItem(todaysSpecial)}
                             className="w-full max-w-md mx-auto mb-8 sm:mb-10 relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 active:scale-95"
                         >
@@ -328,9 +328,8 @@ export default function Menu({ initialData }: MenuProps) {
                                                 )}
                                                 {item.tags?.slice(0, 1).map((tag: string) => (
                                                     tag.toLowerCase() !== 'special' ? (
-                                                        <span key={tag} className={`px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-0.5 ${
-                                                            tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-600'
-                                                        }`}>
+                                                        <span key={tag} className={`px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-0.5 ${tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-600'
+                                                            }`}>
                                                             {tag.toLowerCase() === 'spicy' && <Flame size={10} className="fill-white" />}
                                                             {tag}
                                                         </span>
@@ -409,9 +408,8 @@ export default function Menu({ initialData }: MenuProps) {
                                                 )}
                                                 {item.tags?.slice(0, 1).map((tag: string) => (
                                                     tag.toLowerCase() !== 'special' ? (
-                                                        <span key={tag} className={`px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full border shadow-sm inline-flex items-center gap-1 ${
-                                                            tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white border-red-400 shadow-red-500/40' : 'bg-white/95 text-stone-600 border-stone-200'
-                                                        }`}>
+                                                        <span key={tag} className={`px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full border shadow-sm inline-flex items-center gap-1 ${tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white border-red-400 shadow-red-500/40' : 'bg-white/95 text-stone-600 border-stone-200'
+                                                            }`}>
                                                             {tag.toLowerCase() === 'spicy' && <Flame size={12} className="fill-white" />}
                                                             {tag}
                                                         </span>
@@ -481,39 +479,38 @@ export default function Menu({ initialData }: MenuProps) {
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 opacity-100 transition-opacity">
                     {/* Backdrop */}
                     <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedItem(null)}></div>
-                    
+
                     {/* Modal Container */}
                     <div className="relative bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh] md:max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
                         {/* Close Button */}
-                        <button 
+                        <button
                             onClick={() => setSelectedItem(null)}
                             className="absolute top-4 right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-gray-900 hover:bg-white hover:text-red-500 transition-colors shadow-sm"
                         >
                             <X size={20} />
                         </button>
-                        
+
                         {/* Huge Image */}
                         <div className="w-full h-56 sm:h-72 bg-stone-100 relative shrink-0">
                             <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
                             <div className="absolute top-4 left-4 flex flex-wrap gap-1.5">
                                 {selectedItem.tags?.map((tag: string) => (
-                                    <span key={tag} className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-1 ${
-                                        tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-700'
-                                    }`}>
+                                    <span key={tag} className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-1 ${tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-700'
+                                        }`}>
                                         {tag.toLowerCase() === 'spicy' && <Flame size={14} className="fill-white" />}
                                         {tag}
                                     </span>
                                 ))}
                             </div>
                         </div>
-                        
+
                         {/* Detailed Content */}
                         <div className="p-5 sm:p-7 overflow-y-auto flex flex-col hide-scrollbar">
                             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight mb-3 tracking-tight">{selectedItem.name}</h2>
                             {selectedItem.description && (
                                 <p className="text-xs sm:text-sm text-stone-500 mb-6 leading-relaxed font-medium">{selectedItem.description}</p>
                             )}
-                            
+
                             {/* Variant Configuration */}
                             {selectedItem.variants && selectedItem.variants.length > 1 && (
                                 <div className="mb-6 bg-stone-50 p-4 rounded-3xl border border-stone-100">
@@ -530,7 +527,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     </select>
                                 </div>
                             )}
-                            
+
                             {/* Add to Cart Floating Trigger */}
                             <div className="mt-auto pt-6 flex items-center justify-between border-t border-stone-50">
                                 <div className="flex flex-col">
@@ -541,7 +538,7 @@ export default function Menu({ initialData }: MenuProps) {
                                             : selectedItem.price}
                                     </span>
                                 </div>
-                                <button 
+                                <button
                                     onClick={(e) => { handleAddToCart(selectedItem, e); setSelectedItem(null); }}
                                     className="bg-amber-500 hover:bg-gray-900 text-white px-8 py-4 sm:py-4 rounded-3xl sm:rounded-[2rem] text-sm sm:text-base font-black shadow-xl shadow-amber-500/30 hover:shadow-gray-900/30 transition-all duration-300 flex items-center gap-2 transform active:scale-95"
                                 >
@@ -706,7 +703,7 @@ export default function Menu({ initialData }: MenuProps) {
                             </button>
 
                             <div className="absolute bottom-4 left-6 text-white max-w-[80%]">
-                                <h2 className="text-2xl sm:text-3xl font-black mb-1 drop-shadow-lg leading-tight">Nomade Tibetan Cuisine</h2>
+                                <h2 className="text-2xl sm:text-3xl font-black mb-1 drop-shadow-lg leading-tight">Nomade - Cuisine Tibétaine</h2>
                                 <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px] sm:text-xs drop-shadow-md">Authentic Himalayan Flavors</p>
                             </div>
                         </div>
@@ -728,15 +725,15 @@ export default function Menu({ initialData }: MenuProps) {
                             <div className="mt-8 pt-6 border-t border-stone-200 grid grid-cols-2 gap-6">
                                 <div>
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Location</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">1003 Lausanne<br />Switzerland</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Faubourg de l'Hôpital 31, Neuchâtel,<br />Switzerland 2000</p>
                                 </div>
                                 <div className="text-right sm:text-left">
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Hours</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Mon-Sat: 11:30 - 22:00<br />Sun: Closed</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Lundi-Samedi:<br />  09h00-14h30 I 18h00-22h00 </p>
                                 </div>
                                 <div className="col-span-2">
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Contact</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">info@nomadecuisine.ch<br />+41 21 123 45 67</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">nomade.cuisinetib@gmail.com<br />+41 0327213444</p>
                                 </div>
                             </div>
                         </div>
