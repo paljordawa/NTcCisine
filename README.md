@@ -27,9 +27,9 @@ It acts as both a **dynamic customer-facing digital menu** (synchronized in real
 *   **Astro DB:** The native, typesafe ORM and database solution used to manage the `Orders` table.
 *   **[Turso](https://turso.tech/):** The production database provider. Turso provides a globally distributed SQLite-compatible (libSQL) edge database perfectly suited for Astro DB's serverless queries.
 
-### 3. Hosting: Netlify
-*   **[Netlify](https://www.netlify.com/):** The application is hosted purely on Netlify, taking advantage of Netlify serverless functions for the Astro API endpoints (Loyverse sync and order processing). 
-*   Netlify Blob storage is utilized natively by Astro to emulate and persist sessions across deployments.
+### 3. Hosting: Cloudflare Pages
+*   **[Cloudflare Pages](https://pages.cloudflare.com/):** The application is hosted on Cloudflare Pages, using Cloudflare Workers (edge functions) for all Astro SSR API endpoints (Loyverse sync and order processing).
+*   The `nodejs_compat` compatibility flag is enabled via `wrangler.toml` to ensure full compatibility with Turso's libSQL HTTP client.
 
 ---
 
@@ -63,7 +63,7 @@ It acts as both a **dynamic customer-facing digital menu** (synchronized in real
 The customer menu is built dynamically from **Loyverse POS**.
 1. Log into your Loyverse Back Office.
 2. Generate a **Developer API Access Token**.
-3. Save it as an environment variable (`LOYVERSE_ACCESS_TOKEN`) in Netlify.
+3. Save it as an environment variable (`LOYVERSE_ACCESS_TOKEN`) in **Cloudflare Pages**.
 
 ### 🏷️ Interactive Menu Tagging (Today's Special)
 The Nomade web application intelligently reacts to metadata tags added directly from the Loyverse Dashboard. 
@@ -76,13 +76,14 @@ To mark any item as the "Today's Special":
 To hook up Astro DB to your production Turso database:
 1. Create a database on Turso (`turso db create nomade-db`).
 2. Generate database credentials using the Turso CLI.
-3. Add the resulting `ASTRO_STUDIO_APP_TOKEN` (or direct Turso credentials depending on your adapter) to your Netlify Environment Variables.
+3. Add the resulting `ASTRO_STUDIO_APP_TOKEN` (or direct Turso credentials depending on your adapter) to your **Cloudflare Pages Environment Variables**.
 
-### Netlify Deployment
-1. Connect your GitHub repository to Netlify.
-2. The build command is pre-configured to `npm run build`.
-3. The publish directory is `dist`.
-4. Ensure all environment variables (Loyverse Token, Database URLs) are correctly mapped in the Netlify dashboard before triggering a production build.
+### Cloudflare Pages Deployment
+1. Connect your GitHub repository to Cloudflare Pages.
+2. Set the build command to: `npm run build`
+3. Set the output directory to: `dist`
+4. Ensure all environment variables (Loyverse Token, Database URLs) are correctly mapped in the **Cloudflare Pages > Settings > Environment Variables** dashboard before triggering a production build.
+5. The `wrangler.toml` at the project root will automatically apply the `nodejs_compat` compatibility flag.
 
 ---
 

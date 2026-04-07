@@ -1,5 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound, Printer } from 'lucide-react';
+
+const LiveTimer = ({ createdAt }: { createdAt: string }) => {
+    const [elapsed, setElapsed] = useState('');
+    const [isOverdue, setIsOverdue] = useState(false);
+
+    useEffect(() => {
+        const updateTimer = () => {
+            const start = new Date(createdAt).getTime();
+            const now = new Date().getTime();
+            const diff = now - start;
+
+            if (diff < 0) return setElapsed('Just now');
+
+            const minutes = Math.floor(diff / 60000);
+            const seconds = Math.floor((diff % 60000) / 1000);
+            
+            setIsOverdue(minutes >= 10);
+            setElapsed(`${minutes}m ${seconds}s`);
+        };
+
+        updateTimer();
+        const interval = setInterval(updateTimer, 1000);
+        return () => clearInterval(interval);
+    }, [createdAt]);
+
+    return (
+        <div className={`flex flex-col items-end print:hidden`}>
+            <span className="text-[9px] uppercase font-black text-stone-400 tracking-widest mb-1">Elapsed</span>
+            <span className={`text-sm font-black px-2.5 py-1 rounded-lg tracking-wide shadow-sm border ${isOverdue ? 'bg-red-50 text-red-600 border-red-200 animate-pulse' : 'bg-white text-stone-600 border-stone-200'}`}>
+                {elapsed}
+            </span>
+        </div>
+    );
+};
 
 interface CartItem {
     item: { name: string; price: string };
@@ -25,6 +59,46 @@ export default function CounterDashboard() {
     const [activeTab, setActiveTab] = useState<'live' | 'history'>('live');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [printingOrderId, setPrintingOrderId] = useState<string | null>(null);
+    const [isPaused, setIsPaused] = useState<boolean>(false);
+    const prevOrdersCount = useRef(0);
+
+    const playDing = () => {
+        try {
+            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+            const strikeBell = (startTime: number) => {
+                const frequencies = [1200, 1600, 2400, 3200];
+                const masterGain = ctx.createGain();
+                masterGain.connect(ctx.destination);
+                
+                frequencies.forEach(freq => {
+                    const osc = ctx.createOscillator();
+                    const partialGain = ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.value = freq;
+                    osc.connect(partialGain);
+                    partialGain.connect(masterGain);
+                    
+                    partialGain.gain.setValueAtTime(0, startTime);
+                    partialGain.gain.linearRampToValueAtTime(0.4 / frequencies.length, startTime + 0.02);
+                    partialGain.gain.exponentialRampToValueAtTime(0.001, startTime + 1.2);
+                    
+                    osc.start(startTime);
+                    osc.stop(startTime + 1.2);
+                });
+            };
+            strikeBell(ctx.currentTime);
+            strikeBell(ctx.currentTime + 0.15);
+        } catch(e) { } // Ignore if browser blocks audio
+    };
+
+    useEffect(() => {
+        // Only ding if we already loaded the initial list to avoid dinging on page refresh
+        if (!loading && orders.length > prevOrdersCount.current) {
+            playDing();
+        }
+        prevOrdersCount.current = orders.length;
+    }, [orders.length, loading]);
 
     const handlePinSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -55,10 +129,38 @@ export default function CounterDashboard() {
         }
     };
 
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/settings');
+            if (res.ok) {
+                const data = await res.json();
+                setIsPaused(data.isOrderingPaused);
+            }
+        } catch(e) {}
+    };
+
+    const togglePause = async () => {
+        const newState = !isPaused;
+        setIsPaused(newState);
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isOrderingPaused: newState })
+            });
+        } catch(e) {
+            setIsPaused(!newState); // revert
+        }
+    };
+
     // Poll every 5 seconds
     useEffect(() => {
         fetchOrders();
-        const interval = setInterval(fetchOrders, 5000);
+        fetchSettings();
+        const interval = setInterval(() => {
+            fetchOrders();
+            fetchSettings();
+        }, 5000);
         return () => clearInterval(interval);
     }, []);
 
@@ -97,7 +199,7 @@ export default function CounterDashboard() {
         }));
     };
 
-    const handleAction = async (orderId: string, action: 'accept' | 'reject') => {
+    const handleAction = async (orderId: string, action: 'accept' | 'reject' | 'ready') => {
         const order = orders.find(o => o.id === orderId);
         if (!order) return;
 
@@ -128,6 +230,16 @@ export default function CounterDashboard() {
         } catch (e) {
             alert('Error communicating with server');
         }
+    };
+
+    const handlePrint = (orderId: string) => {
+        setPrintingOrderId(orderId);
+        // Small delay to let React render the print classes
+        setTimeout(() => {
+            window.print();
+            // Remove print classes right after the print dialog closes
+            setTimeout(() => setPrintingOrderId(null), 100);
+        }, 100);
     };
 
     if (!isAuthed) {
@@ -183,8 +295,9 @@ export default function CounterDashboard() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto">
-            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6">
+        <div className={`max-w-6xl mx-auto ${printingOrderId ? 'bg-white print:bg-white print:p-0' : ''}`}>
+            {/* Header section (hidden during print) */}
+            <div className="flex flex-col md:flex-row justify-between items-center mb-10 gap-6 print:hidden">
                 <div className="flex items-center gap-4 group cursor-pointer transition-transform hover:scale-105">
                      <img src="/nomade-logo-final-svg.svg" alt="Nomade Logo" className="w-16 sm:w-20 drop-shadow-md" />
                      <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
@@ -208,16 +321,86 @@ export default function CounterDashboard() {
                     </button>
                 </div>
 
-                <div className="flex items-center gap-2 text-stone-600 font-bold bg-white border border-stone-200 px-4 py-2 rounded-full shadow-sm">
-                    <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                    Live Sync
+                <div className="flex items-center gap-4">
+                    <button 
+                        onClick={togglePause}
+                        className={`flex items-center gap-2 px-4 py-2 font-bold text-sm tracking-wide rounded-full shadow-sm transition-all border ${isPaused ? 'bg-red-500 text-white border-red-600 hover:bg-red-600' : 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200'}`}
+                    >
+                        {isPaused ? <X size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />}
+                        {isPaused ? 'Online Disabled' : 'Online Orders Live'}
+                    </button>
+                    
+                    <div className="hidden sm:flex items-center gap-2 text-stone-600 font-bold bg-white border border-stone-200 px-4 py-2 rounded-full shadow-sm">
+                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                        Sync
+                    </div>
                 </div>
             </div>
 
             {error && (
-                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-3 font-bold">
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 rounded-lg flex items-center gap-3 font-bold print:hidden">
                     <AlertCircle />
                     {error}
+                </div>
+            )}
+
+            {/* Daily History Summary & Analytics */}
+            {activeTab === 'history' && history.length > 0 && (
+                <div className="mb-8 flex flex-col gap-6 print:hidden">
+                    <div className="flex flex-wrap gap-4 text-sm font-bold bg-white p-4 border border-stone-200 rounded-xl max-w-fit shadow-sm">
+                        <div className="text-emerald-700 flex flex-col items-start pr-4">
+                            <span className="text-[10px] uppercase tracking-widest text-stone-400 mb-1">Total Sales Today</span>
+                            <span className="text-2xl font-black">CHF {history.filter(o => o.status === 'ready' || o.status === 'accepted').reduce((sum, o) => sum + o.cartTotal, 0).toFixed(2)}</span>
+                        </div>
+                        <div className="border-l border-stone-200 pl-4 text-emerald-600 flex flex-col justify-center">
+                            <span className="text-lg">{history.filter(o => o.status === 'ready' || o.status === 'accepted').length}</span>
+                            <span className="text-[10px] uppercase text-stone-400">Completed</span>
+                        </div>
+                        <div className="border-l border-stone-200 pl-4 text-red-500 flex flex-col justify-center">
+                            <span className="text-lg">{history.filter(o => o.status === 'rejected').length}</span>
+                            <span className="text-[10px] uppercase text-stone-400">Rejected</span>
+                        </div>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-sm max-w-4xl">
+                        <h3 className="font-black text-stone-700 mb-4 tracking-tight flex items-center gap-2">
+                            <div className="w-2 h-6 bg-emerald-500 rounded-full"></div> Hourly Volume
+                        </h3>
+                        <div className="h-40 flex items-end gap-2 sm:gap-4 overflow-x-auto pb-2">
+                            {(() => {
+                                const hours = new Array(24).fill(0);
+                                history.filter(o => o.status === 'ready' || o.status === 'accepted').forEach(order => {
+                                    const h = new Date(order.createdAt).getHours();
+                                    hours[h] += 1;
+                                });
+                                // Find valid range (e.g. 10 to 22)
+                                const activeHours = hours.map((count, hr) => ({ hr, count })).filter(h => h.count > 0);
+                                if (activeHours.length === 0) return <div className="text-stone-400 text-sm">No data yet</div>;
+                                const minHour = Math.max(0, activeHours[0].hr - 1);
+                                const maxHour = Math.min(23, activeHours[activeHours.length - 1].hr + 1);
+                                const displayHours = hours.slice(minHour, maxHour + 1);
+                                const maxCount = Math.max(...displayHours, 1);
+
+                                return displayHours.map((count, idx) => (
+                                    <div key={idx} className="flex flex-col items-center flex-1 min-w-[30px]">
+                                        <div className="w-full flex justify-center mb-2 h-full relative" style={{ minHeight: '100px' }}>
+                                            <div 
+                                                className="absolute bottom-0 w-full sm:w-8 bg-emerald-200 rounded-t-lg transition-all duration-700"
+                                                style={{ height: `${(count / maxCount) * 100}%` }}
+                                            >
+                                                {count > 0 && (
+                                                    <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-xs font-bold text-emerald-800">
+                                                        {count}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <span className="text-[10px] text-stone-400 font-bold uppercase">{minHour + idx}:00</span>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -237,100 +420,216 @@ export default function CounterDashboard() {
                 </div>
             )}
 
-            {((activeTab === 'live' && orders.length > 0) || (activeTab === 'history' && history.length > 0)) && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {(activeTab === 'live' ? orders : history).map((order: any) => {
+            {activeTab === 'live' && orders.length > 0 && (
+                <div className="flex flex-col gap-6">
+                    {/* Kitchen Aggregate View / Prep List */}
+                    <div className="bg-stone-800 p-4 rounded-2xl shadow-md text-white print:hidden">
+                        <div className="flex items-center justify-between mb-3 border-b border-stone-700 pb-2">
+                            <span className="text-xs uppercase tracking-widest font-bold text-stone-400 flex items-center gap-2">
+                                <Printer size={14} className="text-stone-500" /> Kitchen Prep List
+                            </span>
+                        </div>
+                        <div className="flex gap-4 overflow-x-auto pb-1 scrollbar-thin">
+                            {(() => {
+                                const itemsToCook = orders.flatMap((o: any) => o.status === 'pending' || o.status === 'accepted' ? (typeof o.cartItems === 'string' ? JSON.parse(o.cartItems) : o.cartItems) : []);
+                                const prepCounts = itemsToCook.reduce((acc: any, item: CartItem) => {
+                                    const name = item.item.name;
+                                    acc[name] = (acc[name] || 0) + item.quantity;
+                                    return acc;
+                                }, {});
+                                const entries = Object.entries(prepCounts).sort((a: any, b: any) => b[1] - a[1]);
+                                
+                                if (entries.length === 0) return <span className="text-sm text-stone-500">Nothing to prep.</span>;
+                                
+                                return entries.map(([name, qty]) => (
+                                    <div key={name} className="flex items-center gap-2 bg-stone-700 py-1.5 px-3 rounded-lg whitespace-nowrap">
+                                        <span className="bg-amber-500 text-white font-black text-xs w-6 h-6 rounded flex items-center justify-center">{qty as number}</span>
+                                        <span className="text-sm font-medium pr-1">{name}</span>
+                                    </div>
+                                ));
+                            })()}
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {orders.map((order: any) => {
+                            const items: CartItem[] = typeof order.cartItems === 'string' ? JSON.parse(order.cartItems) : order.cartItems;
+                            const orderDate = new Date(order.createdAt);
+                            const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                            const isPrintingThis = printingOrderId === order.id;
+                            const isCooking = order.status === 'accepted';
+
+                        // Give print styling only to the active document being printed
+                        return (
+                            <div key={order.id} className={`bg-white font-sans border-2 border-emerald-600/10 rounded-[2rem] p-5 lg:p-6 shadow-xl shadow-stone-900/5 flex flex-col transform transition-transform duration-300 hover:-translate-y-1 block relative overflow-hidden ${printingOrderId ? (isPrintingThis ? 'print:block print:shadow-none print:border-black print:text-black print:absolute print:inset-0 print:w-[3in] print:w-full' : 'print:hidden hidden') : ''}`}>
+                                
+                                {/* Background glow accent */}
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                                {/* Custom Header */}
+                                <div className="flex justify-between items-start border-b border-stone-100 pb-4 print:border-black">
+                                    <div className="flex flex-col gap-2 relative z-10">
+                                        <div className="flex flex-wrap items-center gap-2">
+                                            <span className={`${isCooking ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'} border shadow-sm font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-widest print:bg-transparent print:border-black`}>
+                                                #{order.id.slice(0, 6).toUpperCase()} {isCooking && ' (COOKING)'}
+                                            </span>
+                                            {order.tableNumber && (
+                                                <span className="bg-blue-50 text-blue-800 border border-blue-200 shadow-sm font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-widest print:bg-transparent print:border-black">
+                                                    Table {order.tableNumber}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex items-center gap-1.5 text-stone-500 font-bold text-sm bg-stone-50 print:bg-transparent w-max px-2 py-1 rounded-md">
+                                            <Clock size={14} className="text-stone-400 print:hidden"/>
+                                            {timeString}
+                                        </div>
+                                    </div>
+                                    <div className="relative z-10">
+                                        {!printingOrderId && <LiveTimer createdAt={order.createdAt} />}
+                                    </div>
+                                </div>
+
+                                {/* Items Container */}
+                                <div className="py-5 flex-grow flex flex-col gap-4 relative z-10">
+                                    {items.length === 0 && (
+                                        <div className="bg-red-50 rounded-xl p-4 text-center border-dashed border-2 border-red-200">
+                                            <p className="text-red-500 font-bold text-sm">All items removed</p>
+                                        </div>
+                                    )}
+                                    
+                                    {items.map((cartItem, idx) => (
+                                        <div key={idx} className="flex justify-between items-start group">
+                                            <div className="flex gap-3.5 items-start flex-grow">
+                                                <div className="bg-stone-100 border border-stone-200 shadow-inner text-stone-600 font-black text-xs w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center shrink-0 print:border-black">
+                                                    {cartItem.quantity}
+                                                </div>
+                                                <span className="font-bold text-gray-900 text-base md:text-lg leading-tight mt-0.5 print:text-black">
+                                                    {cartItem.item.name}
+                                                </span>
+                                            </div>
+                                            {!printingOrderId && (
+                                                <button
+                                                    onClick={() => handleRemoveItem(order.id, idx)}
+                                                    className="opacity-0 group-hover:opacity-100 text-red-300 hover:text-red-600 transition-all p-1.5 hover:bg-red-50 rounded-lg shrink-0 ml-2"
+                                                    title="Remove item"
+                                                >
+                                                    <Trash2 size={18} />
+                                                </button>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Total and Actions */}
+                                <div className="mt-auto flex flex-col border-t border-stone-100 pt-5 print:border-black relative z-10">
+                                    <div className="flex justify-between items-center mb-5">
+                                        <span className="text-stone-400 print:text-black font-bold uppercase tracking-widest text-xs">Total Amount</span>
+                                        <span className={`text-2xl md:text-3xl font-black ${items.length === 0 ? 'text-stone-300 line-through' : 'text-amber-600 print:text-black'}`}>
+                                            CHF {order.cartTotal.toFixed(2)}
+                                        </span>
+                                    </div>
+                                    
+                                    {/* Action Buttons Row */}
+                                    <div className="flex gap-3 print:hidden w-full">
+                                        {isCooking ? (
+                                            <button
+                                                onClick={() => handleAction(order.id, 'ready')}
+                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-2xl py-3 md:py-4 flex items-center justify-center font-black tracking-wider transition-all shadow-lg shadow-blue-500/30 hover:shadow-blue-500/40 active:scale-95 gap-2"
+                                            >
+                                                <Check size={18} strokeWidth={3} /> MARK READY
+                                            </button>
+                                        ) : (
+                                            <>
+                                                <button
+                                                    onClick={() => handleAction(order.id, 'reject')}
+                                                    className="flex-1 bg-white border-2 border-stone-200 text-stone-500 hover:border-red-400 hover:text-red-500 hover:bg-red-50 rounded-2xl py-3 md:py-4 flex items-center justify-center font-bold tracking-wide transition-all shadow-sm gap-1.5"
+                                                    title="Reject Order"
+                                                >
+                                                    <X size={18} strokeWidth={2.5} /> <span className="text-[10px] md:text-xs">REJECT</span>
+                                                </button>
+                                                
+                                                <button
+                                                    onClick={() => handleAction(order.id, 'accept')}
+                                                    disabled={items.length === 0}
+                                                    className={`flex-1 rounded-2xl py-3 md:py-4 flex items-center justify-center font-black tracking-wider transition-all gap-1.5 ${
+                                                        items.length === 0 
+                                                        ? 'bg-stone-100 text-stone-400 cursor-not-allowed border-2 border-stone-200' 
+                                                        : 'bg-amber-500 hover:bg-emerald-500 text-white shadow-lg shadow-amber-500/30 hover:shadow-emerald-500/40 active:scale-95'
+                                                    }`}
+                                                >
+                                                    <Check size={18} strokeWidth={3} />
+                                                    <span className="text-[10px] md:text-xs uppercase break-words text-center px-1">
+                                                        {items.length === 0 ? 'EMPTY' : 'ACCEPT & POS'}
+                                                    </span>
+                                                </button>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        );
+                        })}
+                    </div>
+                </div>
+            )}
+
+            {activeTab === 'history' && history.length > 0 && (
+                <div className="flex flex-col gap-4">
+                    {history.map((order: any) => {
                         const items: CartItem[] = typeof order.cartItems === 'string' ? JSON.parse(order.cartItems) : order.cartItems;
                         const orderDate = new Date(order.createdAt);
                         const timeString = orderDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
                         return (
-                            <div key={order.id} className="bg-white border border-stone-200 rounded-2xl overflow-hidden shadow-xl shadow-stone-900/5 flex flex-col transform transition-transform duration-300 hover:-translate-y-1">
-                                <div className="bg-gradient-to-r from-stone-800 to-stone-700 p-4 text-white flex justify-between items-center shadow-sm">
-                                    <div className="flex items-center gap-2 font-bold text-lg">
-                                        <Clock size={18} />
-                                        {timeString}
-                                        {order.tableNumber && (
-                                            <span className="ml-2 bg-white/20 px-2.5 py-0.5 rounded-full text-sm flex items-center shadow-inner text-amber-100">
-                                                Table {order.tableNumber}
-                                            </span>
-                                        )}
+                            <div key={order.id} className="bg-white border border-stone-200 rounded-2xl p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 shadow-sm hover:shadow-md transition-shadow">
+                                <div className="flex flex-row items-center gap-8 min-w-[250px] shrink-0">
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Time</span>
+                                        <div className="flex items-center gap-1.5 font-black text-gray-900 text-xl tracking-tight">
+                                            <Clock size={18} className="text-emerald-600" />
+                                            {timeString}
+                                        </div>
                                     </div>
-                                    <div className="font-mono bg-black/20 px-2 py-1 rounded text-sm tracking-wider text-amber-100">
-                                        # {order.id.slice(0, 6).toUpperCase()}
-                                    </div>
-                                </div>
-
-                                <div className="p-6 flex-grow">
-                                    <div className="space-y-3 mb-6 min-h-[100px]">
-                                        {items.length === 0 && (
-                                            <p className="text-red-500 font-bold text-sm italic text-center py-4 bg-red-50 rounded-lg">All items removed</p>
-                                        )}
-                                        {items.map((cartItem, idx) => (
-                                            <div key={idx} className="flex justify-between items-start border-b border-stone-100 pb-2 last:border-0 last:pb-0 group">
-                                                <div className="flex items-start gap-3 flex-grow">
-                                                    <span className="bg-stone-100 border border-stone-200 text-stone-700 font-bold px-2 py-0.5 rounded text-sm w-7 text-center shrink-0">
-                                                        {cartItem.quantity}
-                                                    </span>
-                                                    <span className="text-gray-900 font-bold text-lg leading-tight pt-0.5">{cartItem.item.name}</span>
-                                                </div>
-                                                {activeTab === 'live' && (
-                                                    <button
-                                                        onClick={() => handleRemoveItem(order.id, idx)}
-                                                        className="opacity-0 group-hover:opacity-100 text-red-400 hover:text-red-600 transition-all p-1.5 bg-red-50/50 hover:bg-red-100 rounded-lg ml-2"
-                                                        title="Mark unavailable & remove"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    <div className="flex justify-between items-end border-t border-stone-100 pt-4 mt-auto">
-                                        <span className="text-stone-500 uppercase tracking-wider text-sm font-bold">Total</span>
-                                        <span className={`text-2xl font-black ${items.length === 0 ? 'text-stone-300 line-through' : 'text-amber-600'}`}>
-                                            CHF {order.cartTotal.toFixed(2)}
+                                    <div className="flex flex-col">
+                                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Order #</span>
+                                        <span className="font-mono text-base tracking-wider bg-stone-100 px-3 py-1 rounded-lg text-stone-600 font-bold border border-stone-200">
+                                            {order.id.slice(0, 6).toUpperCase()}
                                         </span>
                                     </div>
+                                    {order.tableNumber && (
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Tab</span>
+                                            <span className="font-black text-amber-600 text-lg">#{order.tableNumber}</span>
+                                        </div>
+                                    )}
                                 </div>
 
-                                <div className={`p-4 bg-stone-50 flex gap-3 border-t border-stone-200 ${activeTab === 'history' ? 'justify-between items-center' : ''}`}>
-                                    {activeTab === 'live' ? (
-                                        <>
-                                            <button
-                                                onClick={() => handleAction(order.id, 'reject')}
-                                                className="flex-1 py-3 px-4 bg-white hover:bg-red-50 text-stone-600 hover:text-red-600 rounded-xl font-bold transition-colors flex items-center justify-center gap-2 border border-stone-200 hover:border-red-200 shadow-sm"
-                                            >
-                                                <X size={20} />
-                                                Reject
-                                            </button>
-                                            <button
-                                                onClick={() => handleAction(order.id, 'accept')}
-                                                className={`flex-[2] py-3 px-4 rounded-xl font-bold transition-all flex items-center justify-center gap-2 ${items.length === 0 ? 'bg-stone-100 text-stone-400 cursor-not-allowed border border-stone-200' : 'bg-amber-600 hover:bg-amber-700 text-white shadow-lg shadow-amber-900/20 transform hover:scale-105'}`}
-                                            >
-                                                <Check size={20} />
-                                                {items.length === 0 ? 'Empty Ticket' : 'Accept & POS'}
-                                            </button>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <span className="text-stone-500 text-sm font-bold pr-2 border-r border-stone-200 uppercase tracking-widest">
-                                                Status
+                                <div className="flex-grow flex flex-row flex-wrap gap-2 lg:border-l lg:border-stone-100 lg:pl-6 py-2 lg:py-0">
+                                    {items.map((cartItem, idx) => (
+                                        <span key={idx} className="bg-stone-50 border border-stone-200 text-stone-700 text-xs px-3 py-1.5 rounded-lg flex items-center gap-2 font-bold shadow-sm">
+                                            <span className="font-black bg-stone-200 text-stone-500 w-5 h-5 flex items-center justify-center rounded text-[10px]">{cartItem.quantity}</span>
+                                            {cartItem.item.name}
+                                        </span>
+                                    ))}
+                                </div>
+
+                                <div className="flex flex-row items-center justify-between lg:justify-end gap-8 pt-4 lg:pt-0 border-t border-stone-100 lg:border-t-0 w-full lg:w-auto shrink-0 lg:pl-6 lg:border-l">
+                                    <div className="flex flex-col lg:items-end">
+                                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Total</span>
+                                        <span className="text-2xl font-black text-emerald-700">CHF {order.cartTotal.toFixed(2)}</span>
+                                    </div>
+                                    <div className="flex flex-col lg:items-end">
+                                        <span className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-1">Status</span>
+                                        {order.status === 'accepted' ? (
+                                            <span className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-xl text-sm shadow-sm">
+                                                <Check size={16} /> Accepted
                                             </span>
-                                            <div className="flex-1 flex justify-end">
-                                                {order.status === 'accepted' ? (
-                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-green-50 text-green-700 border border-green-200 font-bold rounded-lg shadow-sm">
-                                                        <Check size={16} /> Accepted
-                                                    </span>
-                                                ) : (
-                                                    <span className="flex items-center gap-2 px-4 py-1.5 bg-red-50 text-red-700 border border-red-200 font-bold rounded-lg shadow-sm">
-                                                        <X size={16} /> Rejected
-                                                    </span>
-                                                )}
-                                            </div>
-                                        </>
-                                    )}
+                                        ) : (
+                                            <span className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 border border-red-200 font-bold rounded-xl text-sm shadow-sm">
+                                                <X size={16} /> Rejected
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         );

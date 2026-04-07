@@ -1,7 +1,8 @@
 import type { MainCategory, SubCategory, MenuItem } from '../data/menu';
+import { LOYVERSE_ACCESS_TOKEN } from 'astro:env/server';
 
 export async function fetchMenuData(): Promise<MainCategory[]> {
-  const token = import.meta.env.LOYVERSE_ACCESS_TOKEN;
+  const token = LOYVERSE_ACCESS_TOKEN;
   if (!token) {
     console.warn("LOYVERSE_ACCESS_TOKEN is missing. Returning empty menu.");
     return [];
