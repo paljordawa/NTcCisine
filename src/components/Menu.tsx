@@ -129,7 +129,7 @@ export default function Menu({ initialData }: MenuProps) {
 
     const handleCheckout = async () => {
         if (cartItems.length === 0) return;
-        
+
         if (!showPinPrompt) {
             setShowPinPrompt(true);
             return;
@@ -683,8 +683,8 @@ export default function Menu({ initialData }: MenuProps) {
                                         {showPinPrompt && (
                                             <div className="mb-6 animate-in fade-in slide-in-from-bottom-2">
                                                 <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 text-center">Enter Security PIN from Menu</label>
-                                                <input 
-                                                    type="text" 
+                                                <input
+                                                    type="text"
                                                     maxLength={4}
                                                     value={customerPin}
                                                     onChange={(e) => setCustomerPin(e.target.value.replace(/[^0-9]/g, ''))}
@@ -739,21 +739,17 @@ export default function Menu({ initialData }: MenuProps) {
 
                             <div className="absolute bottom-4 left-6 text-white max-w-[80%]">
                                 <h2 className="text-2xl sm:text-3xl font-black mb-1 drop-shadow-lg leading-tight">Nomade - Cuisine Tibétaine</h2>
-                                <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px] sm:text-xs drop-shadow-md">Authentic Himalayan Flavors</p>
+                                <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px] sm:text-xs drop-shadow-md">Saveurs authentiques de l'Himalaya</p>
                             </div>
                         </div>
 
                         <div className="p-6 sm:p-8 bg-stone-50">
                             <div className="space-y-4 text-stone-600 text-sm sm:text-base leading-relaxed font-medium">
                                 <p>
-                                    Welcome to Nomade! We bring you the authentic taste of the Himalayas right here.
-                                    Our dishes are crafted with traditional recipes passed down through generations,
-                                    using the freshest ingredients and bespoke spices.
+                                    Bienvenue chez Nomade ! Nous vous faisons découvrir le goût authentique de l'Himalaya, ici même. Nos plats sont élaborés à partir de recettes traditionnelles transmises de génération en génération, utilisant des ingrédients d'une fraîcheur irréprochable et des épices spécialement sélectionnées.
                                 </p>
                                 <p>
-                                    Whether you're craving comforting Momo (dumplings), hearty Thukpa, or rich curries,
-                                    our kitchen is dedicated to providing you with an unforgettable culinary journey.
-                                    Thank you for dining with us!
+                                    Que vous ayez envie de Momos (raviolis) réconfortants, d'une Thukpa généreuse ou de currys riches en saveurs, notre cuisine a à cœur de vous offrir un voyage culinaire inoubliable. Merci de dîner chez nous !
                                 </p>
                             </div>
 
