@@ -15,7 +15,8 @@ const StoreSettings = defineTable({
     columns: {
         id: column.number({ primaryKey: true }),
         isOrderingPaused: column.boolean({ default: false }),
-        storePin: column.text({ optional: true, default: '0000' })
+        storePin: column.text({ optional: true, default: '0000' }),
+        networkIpLock: column.text({ optional: true, deprecated: true })
     }
 });
 
