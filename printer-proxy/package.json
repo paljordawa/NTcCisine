@@ -1,0 +1,14 @@
+{
+  "name": "ntc-printer-proxy",
+  "version": "1.0.0",
+  "description": "Local bridging server to route HTTPS POS requests to the local Epson thermal printer.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-fetch": "^2.7.0"
+  }
+}

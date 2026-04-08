@@ -1,0 +1,194 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight } from 'lucide-react';
+---
+
+<Layout title="System Documentation - Nomade Cuisine">
+    <div class="min-h-screen bg-stone-50 py-12 px-4 sm:px-6">
+        <div class="max-w-4xl mx-auto">
+            {/* Header */}
+            <div class="mb-10 text-center">
+                <div class="w-16 h-16 bg-white border border-stone-200 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+                    <BookOpen size={32} className="text-emerald-600" />
+                </div>
+                <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight mb-4">Site Documentation</h1>
+                <p class="text-stone-500 font-medium text-lg max-w-2xl mx-auto">
+                    Official reference guide for Nomade Cuisine's digital POS systems, hardware configurations, and automated dashboards.
+                </p>
+            </div>
+
+            {/* Content Blocks */}
+            <div class="space-y-8">
+                
+                {/* Dashboard Lock */}
+                <section class="bg-white rounded-[2rem] p-8 sm:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <Lock size={120} />
+                    </div>
+                    <div class="flex items-center gap-3 mb-6 relative z-10">
+                        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100">
+                            <Lock size={20} className="text-amber-600" />
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">1. Counter Dashboard Security</h2>
+                    </div>
+                    <div class="prose prose-stone prose-emerald max-w-none relative z-10">
+                        <p class="text-stone-600 font-medium leading-relaxed">
+                            The Counter Dashboard (<code>/counter</code>) is protected by a client-side PIN pad. This ensures that unauthorized individuals cannot interact with, accept, or reject incoming web orders while the tablet is left unattended.
+                        </p>
+                        <div class="bg-stone-50 border border-stone-200 rounded-xl p-4 mt-4 inline-block font-mono text-sm font-bold text-stone-700">
+                            Default Security PIN: <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded">8888</span>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Online Store Live Toggle */}
+                <section class="bg-white rounded-[2rem] p-8 sm:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <Check size={120} />
+                    </div>
+                    <div class="flex items-center gap-3 mb-6 relative z-10">
+                        <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
+                            <AlertCircle size={20} className="text-blue-600" />
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">2. Store Status Toggles</h2>
+                    </div>
+                    <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
+                        <p class="text-stone-600 font-medium leading-relaxed">
+                            Through the Settings ⚙️ icon on the top right of the Counter Dashboard, a Manager can independently toggle whether the store is accepting digital orders or not.
+                        </p>
+                        
+                        <div class="grid sm:grid-cols-2 gap-4">
+                            <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5">
+                                <h3 class="flex items-center gap-2 font-black text-emerald-800 text-lg mb-2">
+                                    <Check size={18} strokeWidth={3} /> Online Orders Live
+                                </h3>
+                                <p class="text-sm text-emerald-700/80 font-medium leading-relaxed">
+                                    Customers scanning the QR menus at their tables can actively browse the menu, add items to their cart, and submit them directly to the counter for fulfillment.
+                                </p>
+                            </div>
+                            <div class="bg-red-50/50 border border-red-100 rounded-2xl p-5">
+                                <h3 class="flex items-center gap-2 font-black text-red-800 text-lg mb-2">
+                                    <X size={18} strokeWidth={3} /> Ordering Is Paused
+                                </h3>
+                                <p class="text-sm text-red-700/80 font-medium leading-relaxed">
+                                    Customers can still look at the menu, but placing orders is blocked. An "Ordering is currently paused" popup is displayed to them. Excellent for rush hours.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Wi-Fi Security Order Barrier */}
+                <section class="bg-white rounded-[2rem] p-8 sm:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <Lock size={120} />
+                    </div>
+                    <div class="flex items-center gap-3 mb-6 relative z-10">
+                        <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
+                            <Lock size={20} className="text-indigo-600" />
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">3. Wi-Fi Order Barrier (Anti-Spam)</h2>
+                    </div>
+                    <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
+                        <p class="text-stone-600 font-medium leading-relaxed">
+                            To prevent malicious internet users from taking photos of your QR codes and submitting fake orders from home, Nomade Cuisine features an invisible <strong>Geographical / Internet IP Lock</strong>.
+                        </p>
+                        
+                        <div class="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-200">
+                            <div class="p-6">
+                                <h3 class="text-lg font-black text-gray-900 mb-3">How The Barrier Works</h3>
+                                <p class="text-stone-600 font-medium leading-relaxed text-sm">
+                                    When enabled via the <strong>Settings ⚙️ Drawer</strong> on the Counter Dashboard, the system saves the specific Public IP address of the restaurant's internet. 
+                                    Any customer who attempts to place an order will have their phone's IP address silently audited by the backend checkout API. If their phone is not actively connected to the restaurant's local Wi-Fi network, their checkout attempt will be <strong>violently rejected with a 403 Forbidden Error</strong>.
+                                </p>
+                                <div class="mt-4 bg-stone-100 border-l-4 border-stone-300 p-4 rounded-r-xl">
+                                    <h4 class="font-bold text-stone-700 text-sm mb-1 flex items-center gap-2">
+                                        <Lock size={16} /> Fail-Secure By Default
+                                    </h4>
+                                    <p class="text-xs font-medium text-stone-600 leading-relaxed">
+                                        If the Counter Dashboard is accessed for the very first time without configuration, the Geofencing Barrier immediately defaults to a highly-restrictive <code>127.0.0.1</code> lock map. Because of this, public customers attempting to checkout will be universally rejected until a manager manually programs in the correct functional Wi-Fi IP address.
+                                    </p>
+                                </div>
+                            </div>
+                            <div class="p-6 bg-white border-l-4 border-indigo-500">
+                                <h3 class="text-lg font-black text-indigo-900 mb-2">Changing The Router Lock</h3>
+                                <p class="text-stone-600 font-medium leading-relaxed text-sm mb-4">
+                                    If your internet service provider changes your restaurant's underlying IP address (or if you move routers), the barrier will accidentally start blocking everyone. To fix this:
+                                </p>
+                                <ul class="text-sm font-medium text-stone-600 list-disc pl-4 space-y-2">
+                                    <li>Open the Counter Dashboard from a computer physically connected to the restaurant Wi-Fi.</li>
+                                    <li>Click the <strong>Clear</strong> button under the Wi-Fi Order Barrier setting to disable the lock temporarily.</li>
+                                    <li>Type in your current public IP address into the input box and click <strong>Lock</strong>. This explicitly programs the backend API to accept checkout requests originating strictly from that geographical network.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                {/* Epson Hardware Integration */}
+                <section class="bg-white rounded-[2rem] p-8 sm:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <Printer size={120} />
+                    </div>
+                    <div class="flex items-center gap-3 mb-6 relative z-10">
+                        <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center border border-purple-100">
+                            <Printer size={20} className="text-purple-600" />
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">4. Kitchen Printer Configurations</h2>
+                    </div>
+                    <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
+                        <p class="text-stone-600 font-medium leading-relaxed">
+                            The dashboard features an integrated bypass for Google Chrome's usual Print Dialog box, communicating directly with the **Epson TM-m30III** Thermal POS over your local network. There are two "Routing" modes to accommodate browser security standards:
+                        </p>
+                        
+                        <div class="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-200">
+                            <div class="p-6">
+                                <h3 class="text-lg font-black text-gray-900 mb-3">Mode 1: Direct IP Fetch</h3>
+                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
+                                    <strong>How it works:</strong> The dashboard attempts to silently send data directly from your web browser to the printer's local IPv4 Address (e.g. <code class="bg-white font-bold px-1 py-0.5 rounded border border-stone-100 text-purple-600 tracking-tighter">http://192.168.1.106</code>).
+                                </p>
+                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
+                                    <strong>The Catch:</strong> Because your live dashboard is hosted securely on the public internet (using <code>HTTPS://</code>), but your local printer only understands insecure network connections (<code>HTTP://</code>), Google Chrome automatically blocks the connection. This is called the <strong>Mixed Content Rule</strong>.
+                                </p>
+                                <div class="bg-white border-l-4 border-amber-400 p-4 rounded-r-xl">
+                                    <h4 class="font-bold text-amber-800 text-sm mb-2 flex items-center gap-2">
+                                        <AlertCircle size={16} /> Chrome Settings Override (Mandatory)
+                                    </h4>
+                                    <ol class="text-sm font-medium text-stone-600 list-decimal pl-4 space-y-1">
+                                        <li>Open Google Chrome on your Counter PC / Tablet.</li>
+                                        <li>Click the <strong>Padlock / Settings Icon</strong> inside the URL bar right next to the site address.</li>
+                                        <li>Click on <strong>Site settings</strong>.</li>
+                                        <li>Scroll down, look for <strong>Insecure Content</strong>, and change it globally from <em class="text-red-500">Block</em> to <strong class="text-emerald-600 border-b border-emerald-200">Allow</strong>.</li>
+                                    </ol>
+                                </div>
+                            </div>
+
+                            <div class="p-6 bg-white">
+                                <h3 class="text-lg font-black text-gray-900 mb-3">Mode 2: Local Proxy Tool</h3>
+                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
+                                    <strong>How it works:</strong> Web browsers have a universal rule—they always trust the physical computer they are currently running on, representing it securely as <code class="bg-stone-50 font-bold px-1 py-0.5 rounded border border-stone-100 text-emerald-600 tracking-tighter">http://localhost:8000</code>.
+                                </p>
+                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
+                                    <strong>The Solution:</strong> If you cannot or do not want to override Chrome's security settings manually, you can run the bundled Node.js script. When you print, the dashboard beams the XML ticket securely to the trusted <code>localhost</code> backdoor running on the physical Windows machine. The script then silently catches the ticket and relays it over the Wi-Fi to the Epson Printer.
+                                </p>
+                                <ul class="text-sm font-medium text-stone-600 list-disc pl-4 space-y-1">
+                                    <li>Open the <code>/printer-proxy</code> folder located in the project's codebase.</li>
+                                    <li>Execute <code>npm install</code> then <code>npm start</code> to let it run quietly in the background on your Windows counter machine.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                    </div>
+                </section>
+            </div>
+
+            {/* Footer Back Link */}
+            <div class="mt-12 text-center pb-12">
+                <a href="/counter" class="inline-flex items-center gap-2 px-6 py-3 bg-white border border-stone-200 rounded-full font-bold text-stone-600 shadow-sm hover:shadow-md hover:bg-stone-50 transition-all active:scale-95 group">
+                    <ChevronRight size={18} className="rotate-180 text-stone-400 group-hover:-translate-x-1 transition-transform" />
+                    Back to Counter Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</Layout>

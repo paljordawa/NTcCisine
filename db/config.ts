@@ -14,7 +14,8 @@ const Order = defineTable({
 const StoreSettings = defineTable({
     columns: {
         id: column.number({ primaryKey: true }),
-        isOrderingPaused: column.boolean({ default: false })
+        isOrderingPaused: column.boolean({ default: false }),
+        networkIpLock: column.text({ optional: true, default: '127.0.0.1' })
     }
 });
 

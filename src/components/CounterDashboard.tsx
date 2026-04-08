@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound, Printer } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound, Printer, Settings, BookOpen } from 'lucide-react';
 
 const LiveTimer = ({ createdAt }: { createdAt: string }) => {
     const [elapsed, setElapsed] = useState('');
@@ -61,7 +61,42 @@ export default function CounterDashboard() {
     const [error, setError] = useState<string | null>(null);
     const [printingOrderId, setPrintingOrderId] = useState<string | null>(null);
     const [isPaused, setIsPaused] = useState<boolean>(false);
+    const [printerMode, setPrinterMode] = useState<'direct' | 'proxy'>('direct');
+    const [printerIp, setPrinterIp] = useState('192.168.1.106');
+    const [printerId, setPrinterId] = useState('local_printer');
+    const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+    const [lockedIpLocation, setLockedIpLocation] = useState<string | null>(null);
+    const [customIpInput, setCustomIpInput] = useState('');
     const prevOrdersCount = useRef(0);
+
+    useEffect(() => {
+        const savedMode = localStorage.getItem('printerMode') as 'direct' | 'proxy';
+        if (savedMode === 'direct' || savedMode === 'proxy') {
+            setPrinterMode(savedMode);
+        }
+
+        const savedIp = localStorage.getItem('printerIp');
+        if (savedIp) setPrinterIp(savedIp);
+
+        const savedId = localStorage.getItem('printerId');
+        if (savedId) setPrinterId(savedId);
+    }, []);
+
+    const togglePrinterMode = () => {
+        const newMode = printerMode === 'direct' ? 'proxy' : 'direct';
+        setPrinterMode(newMode);
+        localStorage.setItem('printerMode', newMode);
+    };
+
+    const updatePrinterIp = (val: string) => {
+        setPrinterIp(val);
+        localStorage.setItem('printerIp', val);
+    };
+
+    const updatePrinterId = (val: string) => {
+        setPrinterId(val);
+        localStorage.setItem('printerId', val);
+    };
 
     const playDing = () => {
         try {
@@ -135,8 +170,28 @@ export default function CounterDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setIsPaused(data.isOrderingPaused);
+                setLockedIpLocation(data.lockedIp || null);
+                if (data.lockedIp) setCustomIpInput(data.lockedIp);
             }
         } catch(e) {}
+    };
+
+    const saveNetworkLock = async (ipToSave: string | null) => {
+        const toggleOn = ipToSave !== null;
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ lockNetwork: toggleOn, customIp: ipToSave })
+            });
+            const data = await res.json();
+            setLockedIpLocation(data.lockedIp || null);
+            if (data.lockedIp) {
+                setCustomIpInput(data.lockedIp);
+            } else {
+                setCustomIpInput('');
+            }
+        } catch(e) { }
     };
 
     const togglePause = async () => {
@@ -274,7 +329,11 @@ export default function CounterDashboard() {
 
             const soapEnvelope = `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>${xmlContent}</s:Body></s:Envelope>`;
             
-            const printRes = await fetch(`http://192.168.1.106/cgi-bin/epos/dispacher.cgi?devid=local_printer&timeout=5000`, {
+            const endpoint = printerMode === 'direct' 
+                ? `http://${printerIp}/cgi-bin/epos/dispacher.cgi?devid=${encodeURIComponent(printerId)}&timeout=5000`
+                : `http://localhost:8000/print?ip=${encodeURIComponent(printerIp)}&devid=${encodeURIComponent(printerId)}`;
+
+            const printRes = await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'text/xml; charset=utf-8'
@@ -374,12 +433,12 @@ export default function CounterDashboard() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <button 
-                        onClick={togglePause}
-                        className={`flex items-center gap-2 px-4 py-2 font-bold text-sm tracking-wide rounded-full shadow-sm transition-all border ${isPaused ? 'bg-red-500 text-white border-red-600 hover:bg-red-600' : 'bg-emerald-100 text-emerald-800 border-emerald-200 hover:bg-emerald-200'}`}
+                    <button
+                        onClick={() => setIsSettingsOpen(true)}
+                        className={`flex items-center justify-center w-10 h-10 rounded-full shadow-sm transition-all border bg-white border-stone-200 text-stone-500 hover:bg-stone-50 hover:text-emerald-600 hover:rotate-90`}
+                        title="Dashboard Settings"
                     >
-                        {isPaused ? <X size={16} strokeWidth={3} /> : <Check size={16} strokeWidth={3} />}
-                        {isPaused ? 'Online Disabled' : 'Online Orders Live'}
+                        <Settings size={20} strokeWidth={2.5} />
                     </button>
                     
                     <div className="hidden sm:flex items-center gap-2 text-stone-600 font-bold bg-white border border-stone-200 px-4 py-2 rounded-full shadow-sm">
@@ -688,6 +747,144 @@ export default function CounterDashboard() {
                     })}
                 </div>
             )}
+
+            {/* Settings Sidebar Overlay */}
+            <div className={`fixed inset-0 z-50 flex justify-end print:hidden transition-all duration-300 ${isSettingsOpen ? 'visible' : 'invisible'}`}>
+                {/* Backdrop */}
+                <div 
+                    className={`absolute inset-0 bg-stone-900/30 backdrop-blur-sm transition-opacity duration-300 ${isSettingsOpen ? 'opacity-100' : 'opacity-0'}`}
+                    onClick={() => setIsSettingsOpen(false)}
+                ></div>
+
+                {/* Sliding Drawer */}
+                <div className={`relative w-full max-w-sm bg-stone-50 h-full shadow-2xl flex flex-col transform transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] ${isSettingsOpen ? 'translate-x-0' : 'translate-x-full'}`}>
+                    <div className="flex items-center justify-between p-6 bg-white border-b border-stone-200 shadow-sm z-10 relative">
+                        <h2 className="text-xl font-black text-gray-900 flex items-center gap-2">
+                            <Settings className="text-emerald-600" /> Settings
+                        </h2>
+                        <button 
+                            onClick={() => setIsSettingsOpen(false)}
+                            className="p-2 bg-stone-100 hover:bg-red-100 hover:text-red-600 text-stone-500 rounded-full transition-colors active:scale-95"
+                        >
+                            <X size={20} />
+                        </button>
+                    </div>
+
+                    <div className="p-6 flex flex-col gap-8 overflow-y-auto z-0 relative">
+                        {/* Store Status Card */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest pl-1">Store Status</h3>
+                            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col gap-4 relative overflow-hidden">
+                                <div className={`absolute top-0 left-0 w-1 h-full ${isPaused ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
+                                <p className="text-sm text-stone-500 font-medium leading-relaxed pl-1">
+                                    Toggle whether roaming customers can actively place orders via their QR code menus.
+                                </p>
+                                <button 
+                                    onClick={togglePause}
+                                    className={`w-full flex items-center justify-center gap-2 px-4 py-3.5 font-black text-sm tracking-wide rounded-xl shadow-sm transition-all border ${isPaused ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : 'bg-emerald-50 text-emerald-700 border-emerald-200 hover:bg-emerald-100'} active:scale-95`}
+                                >
+                                    {isPaused ? <X size={18} strokeWidth={3} /> : <Check size={18} strokeWidth={3} />}
+                                    {isPaused ? 'ORDERING IS PAUSED' : 'ONLINE ORDERS LIVE'}
+                                </button>
+                                
+                                <div className="border-t border-stone-100 pt-4 mt-2">
+                                    <div className="flex flex-col gap-2">
+                                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 flex items-center justify-between">
+                                            <span>Wi-Fi Order Barrier</span>
+                                            {lockedIpLocation && <span className="text-emerald-500 flex items-center gap-1"><Check size={10}/> SECURE</span>}
+                                        </label>
+                                        <p className="text-[10px] text-stone-400 leading-relaxed pl-1 pb-1">
+                                            Only allow orders originating from this specific internet IP Address:
+                                        </p>
+                                        <div className="flex gap-2">
+                                            <input 
+                                                type="text" 
+                                                value={customIpInput} 
+                                                onChange={(e) => setCustomIpInput(e.target.value)}
+                                                className={`w-full bg-stone-50 border rounded-xl px-3 py-2 font-mono text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${lockedIpLocation === customIpInput && lockedIpLocation ? 'text-indigo-700 border-indigo-200 shadow-inner' : 'text-stone-700 border-stone-200 shadow-inner'}`}
+                                                placeholder="e.g. 192.168.1.1"
+                                            />
+                                            {lockedIpLocation ? (
+                                                <button 
+                                                    onClick={() => saveNetworkLock(null)}
+                                                    className="px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none"
+                                                >
+                                                    Clear
+                                                </button>
+                                            ) : (
+                                                <button 
+                                                    onClick={() => saveNetworkLock(customIpInput)}
+                                                    className="px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none"
+                                                >
+                                                    Lock
+                                                </button>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Hardware Routing Card */}
+                        <div className="flex flex-col gap-3">
+                            <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest pl-1">Receipt Routing</h3>
+                            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col gap-4">
+                                <p className="text-sm text-stone-500 font-medium leading-relaxed pl-1">
+                                    Configure how tickets are transmitted to the kitchen hardware when accepted.
+                                </p>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        onClick={() => { setPrinterMode('direct'); localStorage.setItem('printerMode', 'direct'); }}
+                                        className={`flex flex-col items-center gap-2 p-4 rounded-[1rem] border-2 transition-all active:scale-95 ${printerMode === 'direct' ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200 hover:bg-stone-100 hover:text-stone-600'}`}
+                                    >
+                                        <Printer size={24} strokeWidth={2} className={`transition-colors ${printerMode === 'direct' ? 'text-amber-500' : 'text-stone-300'}`} />
+                                        <span className="text-xs font-black">Direct IP</span>
+                                    </button>
+                                    <button
+                                        onClick={() => { setPrinterMode('proxy'); localStorage.setItem('printerMode', 'proxy'); }}
+                                        className={`flex flex-col items-center gap-2 p-4 rounded-[1rem] border-2 transition-all active:scale-95 ${printerMode === 'proxy' ? 'border-emerald-500 bg-emerald-50 text-emerald-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200 hover:bg-stone-100 hover:text-stone-600'}`}
+                                    >
+                                        <Printer size={24} strokeWidth={2} className={`transition-colors ${printerMode === 'proxy' ? 'text-emerald-500' : 'text-stone-300'}`} />
+                                        <span className="text-xs font-black">Local Proxy</span>
+                                    </button>
+                                </div>
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1">IP Address</label>
+                                    <input 
+                                        type="text" 
+                                        value={printerIp} 
+                                        onChange={(e) => updatePrinterIp(e.target.value)}
+                                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
+                                        placeholder="192.168.x.x"
+                                    />
+                                    
+                                    <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 mt-1">Epson Device ID</label>
+                                    <input 
+                                        type="text" 
+                                        value={printerId} 
+                                        onChange={(e) => updatePrinterId(e.target.value)}
+                                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
+                                        placeholder="local_printer"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Documentation Link */}
+                        <div className="flex flex-col gap-3">
+                            <a 
+                                href="/docs" 
+                                className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-stone-100/50 hover:bg-stone-100 border border-stone-200 rounded-[1rem] font-bold text-stone-600 hover:text-stone-800 transition-all active:scale-95 group shadow-sm"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                            >
+                                <BookOpen size={18} className="text-emerald-600 group-hover:rotate-12 transition-transform" />
+                                Manager Documentation
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     );
 }

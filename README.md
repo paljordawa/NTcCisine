@@ -87,6 +87,24 @@ To hook up Astro DB to your production Turso database:
 
 ---
 
+## 🖨️ Silent Kitchen Printer Configuration
+
+The Counter Dashboard features a **100% Silent Print** toggle specifically designed for the **Epson TM-m30III** kitchen printer via ePOS-Print XML. Staff can configure how print data is actively routed to the printer by clicking the Printer toggle in the dashboard header.
+
+### Mode 1: Direct IP (`192.168.1.106`)
+This is the fastest method. It transmits data securely from the client browser straight to the local Ethernet/WiFi Epson printer via `fetch()`.
+*   **The Catch:** Because the Cloudflare website is hosted over a secure HTTPS connection, browsers automatically block outgoing requests to insecure local IP addresses as "Mixed Content".
+*   **The Solution:** You MUST open Google Chrome on the Counter Tablet, click the padlock next to the URL, go to **Site Settings**, and change **Insecure Content** to **Allow**. Once allowed, the browser will seamlessly transmit print streams internally.
+
+### Mode 2: Local Proxy Bridge (`localhost`)
+If you refuse or are unable to change Chrome's security settings, or want deeper local integration, you can use the bundled Node proxy script. Secure web pages are allowed to bypass the Mixed Content block if they route strictly to `localhost`.
+1.  Navigate into the newly created folder: `cd printer-proxy`
+2.  Install dependencies: `npm install`
+3.  Start the proxy server in the background: `npm start`
+4.  Switch the dashboard to **Local Proxy** mode. The front-end will post to `http://localhost:8000/print`, which will flawlessly tunnel the secure payload natively to the printer.
+
+---
+
 ## 🔒 Security
 
 *   **Cashier Login:** Access to the `/counter` route is strictly protected by a client-side PIN pad rendering lock. The default PIN is configured to `8888`.

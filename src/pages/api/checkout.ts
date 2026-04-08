@@ -1,9 +1,9 @@
 export const prerender = false;
 
 import type {APIRoute} from 'astro';
-import { db, Order } from 'astro:db';
+import { db, Order, StoreSettings, eq } from 'astro:db';
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
     const body = await request.json();
     const { cartItems, cartTotal, tableNumber } = body;
@@ -13,6 +13,21 @@ export const POST: APIRoute = async ({ request }) => {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
       });
+    }
+
+    // Security Gate: IP Location Interceptor
+    const settingsList = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1));
+    const settings = settingsList.length > 0 ? settingsList[0] : null;
+
+    if (settings && settings.networkIpLock) {
+        const userIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || clientAddress;
+        if (userIp !== settings.networkIpLock) {
+            console.log(`[Security Alert] Blocked external order attempt from IP: ${userIp}`);
+            return new Response(JSON.stringify({ error: "You must be physically connected to the Restaurant's Wi-Fi network to place an order." }), {
+                status: 403,
+                headers: { 'Content-Type': 'application/json' }
+            });
+        }
     }
 
     const orderId = crypto.randomUUID();
