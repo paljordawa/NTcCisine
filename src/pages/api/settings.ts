@@ -3,13 +3,15 @@ import { db, StoreSettings, eq } from 'astro:db';
 
 export const prerender = false;
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request, clientAddress }) => {
     try {
         const settings = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1));
         const isPaused = settings.length > 0 ? settings[0].isOrderingPaused : false;
         const lockedIp = settings.length > 0 ? settings[0].networkIpLock : '127.0.0.1';
         
-        return new Response(JSON.stringify({ isOrderingPaused: isPaused, lockedIp }), { 
+        const yourIpAddress = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || clientAddress || '127.0.0.1';
+
+        return new Response(JSON.stringify({ isOrderingPaused: isPaused, lockedIp, yourIpAddress }), { 
             status: 200, headers: { 'Content-Type': 'application/json' } 
         });
     } catch(e) {

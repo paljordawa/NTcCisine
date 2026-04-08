@@ -67,6 +67,7 @@ export default function CounterDashboard() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [lockedIpLocation, setLockedIpLocation] = useState<string | null>(null);
     const [customIpInput, setCustomIpInput] = useState('');
+    const [yourIpAddress, setYourIpAddress] = useState('');
     const prevOrdersCount = useRef(0);
 
     useEffect(() => {
@@ -170,27 +171,32 @@ export default function CounterDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setIsPaused(data.isOrderingPaused);
-                setLockedIpLocation(data.lockedIp || null);
-                if (data.lockedIp) setCustomIpInput(data.lockedIp);
+                setIsPaused(data.isOrderingPaused);
+                setLockedIpLocation(data.lockedIp || '127.0.0.1');
+                setCustomIpInput(data.lockedIp || '127.0.0.1');
+
+                // Bypass local loopback (::1) and grab the true external Router WAN IP
+                try {
+                    const wanRes = await fetch('https://api.ipify.org?format=json');
+                    const wanData = await wanRes.json();
+                    setYourIpAddress(wanData.ip);
+                } catch(err) {
+                    setYourIpAddress(data.yourIpAddress || 'Unknown');
+                }
             }
         } catch(e) {}
     };
 
-    const saveNetworkLock = async (ipToSave: string | null) => {
-        const toggleOn = ipToSave !== null;
+    const saveNetworkLock = async (ipToSave: string) => {
         try {
             const res = await fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lockNetwork: toggleOn, customIp: ipToSave })
+                body: JSON.stringify({ lockNetwork: true, customIp: ipToSave })
             });
             const data = await res.json();
-            setLockedIpLocation(data.lockedIp || null);
-            if (data.lockedIp) {
-                setCustomIpInput(data.lockedIp);
-            } else {
-                setCustomIpInput('');
-            }
+            setLockedIpLocation(data.lockedIp || '127.0.0.1');
+            setCustomIpInput(data.lockedIp || '127.0.0.1');
         } catch(e) { }
     };
 
@@ -777,7 +783,7 @@ export default function CounterDashboard() {
                             <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col gap-4 relative overflow-hidden">
                                 <div className={`absolute top-0 left-0 w-1 h-full ${isPaused ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
                                 <p className="text-sm text-stone-500 font-medium leading-relaxed pl-1">
-                                    Toggle whether roaming customers can actively place orders via their QR code menus.
+                                    Toggle whether dine-in customers can actively place orders via their QR code menus.
                                 </p>
                                 <button 
                                     onClick={togglePause}
@@ -791,34 +797,35 @@ export default function CounterDashboard() {
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 flex items-center justify-between">
                                             <span>Wi-Fi Order Barrier</span>
-                                            {lockedIpLocation && <span className="text-emerald-500 flex items-center gap-1"><Check size={10}/> SECURE</span>}
+                                            <span className="text-emerald-500 flex items-center gap-1"><Check size={10}/> CONFIGURED</span>
                                         </label>
                                         <p className="text-[10px] text-stone-400 leading-relaxed pl-1 pb-1">
-                                            Only allow orders originating from this specific internet IP Address:
+                                            Allow orders originating only from this Public IP Address:
+                                            <br/>
+                                            <span className="font-bold text-stone-600 flex items-center justify-between mt-1">
+                                                <span>Your Router IP: <span className="font-mono bg-stone-100 px-1 py-0.5 rounded text-indigo-600">{yourIpAddress}</span></span>
+                                                <button 
+                                                    onClick={() => saveNetworkLock(yourIpAddress)}
+                                                    className="text-indigo-500 hover:text-indigo-700 underline active:scale-95 transition-transform"
+                                                >
+                                                    Use Current Router
+                                                </button>
+                                            </span>
                                         </p>
                                         <div className="flex gap-2">
                                             <input 
                                                 type="text" 
                                                 value={customIpInput} 
                                                 onChange={(e) => setCustomIpInput(e.target.value)}
-                                                className={`w-full bg-stone-50 border rounded-xl px-3 py-2 font-mono text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/50 ${lockedIpLocation === customIpInput && lockedIpLocation ? 'text-indigo-700 border-indigo-200 shadow-inner' : 'text-stone-700 border-stone-200 shadow-inner'}`}
+                                                className="w-full bg-stone-50 rounded-xl px-3 py-2 font-mono text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-indigo-700 border border-indigo-200 shadow-inner"
                                                 placeholder="e.g. 192.168.1.1"
                                             />
-                                            {lockedIpLocation ? (
-                                                <button 
-                                                    onClick={() => saveNetworkLock(null)}
-                                                    className="px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none"
-                                                >
-                                                    Clear
-                                                </button>
-                                            ) : (
-                                                <button 
-                                                    onClick={() => saveNetworkLock(customIpInput)}
-                                                    className="px-3 py-2 bg-indigo-50 text-indigo-700 border border-indigo-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none"
-                                                >
-                                                    Lock
-                                                </button>
-                                            )}
+                                            <button 
+                                                onClick={() => saveNetworkLock(customIpInput)}
+                                                className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none whitespace-nowrap"
+                                            >
+                                                {lockedIpLocation === customIpInput ? 'Saved' : 'Update'}
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
