@@ -366,7 +366,7 @@ export default function CounterDashboard() {
             }
         } catch (e) {
             console.error("Print connection error:", e);
-            alert("Could not connect to Kitchen Printer at 192.168.1.106.\n\nIMPORTANT: Please ensure 'Insecure Content' is set to 'Allow' in your Chrome Site Settings for this to work over HTTPS.");
+            alert(`Could not connect to Kitchen Printer at ${printerIp}.\n\nIMPORTANT: Please ensure 'Insecure Content' is set to 'Allow' in your Chrome Site Settings for this to work over HTTPS.`);
         } finally {
             if (onPrintDone) onPrintDone();
         }
@@ -919,6 +919,18 @@ export default function CounterDashboard() {
                                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
                                         placeholder="local_printer"
                                     />
+
+                                    <button 
+                                        onClick={() => {
+                                            localStorage.setItem('printerIp', printerIp);
+                                            localStorage.setItem('printerId', printerId);
+                                            alert("Printer configuration saved locally!");
+                                        }}
+                                        className="mt-4 w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-stone-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                    >
+                                        <Check size={14} strokeWidth={3} />
+                                        Save Changes
+                                    </button>
                                 </div>
                             </div>
                         </div>
