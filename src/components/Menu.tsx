@@ -24,6 +24,8 @@ export default function Menu({ initialData }: MenuProps) {
     const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [tableNumber, setTableNumber] = useState<string | null>(null);
+    const [showPinPrompt, setShowPinPrompt] = useState(false);
+    const [customerPin, setCustomerPin] = useState('');
 
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -127,6 +129,17 @@ export default function Menu({ initialData }: MenuProps) {
 
     const handleCheckout = async () => {
         if (cartItems.length === 0) return;
+        
+        if (!showPinPrompt) {
+            setShowPinPrompt(true);
+            return;
+        }
+
+        if (customerPin.length < 4) {
+            setSubmitMessage({ type: 'error', text: 'Please enter the 4-digit security code.' });
+            return;
+        }
+
         setIsSubmitting(true);
         setSubmitMessage(null);
 
@@ -143,7 +156,8 @@ export default function Menu({ initialData }: MenuProps) {
                 body: JSON.stringify({
                     cartItems,
                     cartTotal,
-                    tableNumber
+                    tableNumber,
+                    storePin: customerPin
                 }),
             });
 
@@ -155,10 +169,15 @@ export default function Menu({ initialData }: MenuProps) {
                 setTimeout(() => {
                     setCartItems([]);
                     setIsCartOpen(false);
+                    setShowPinPrompt(false);
+                    setCustomerPin('');
                     setSubmitMessage(null);
                 }, 3000);
             } else {
                 setSubmitMessage({ type: 'error', text: data.error || 'Failed to send order' });
+                if (response.status === 403) {
+                    setCustomerPin('');
+                }
             }
         } catch (error) {
             console.error('Checkout error:', error);
@@ -658,6 +677,22 @@ export default function Menu({ initialData }: MenuProps) {
                                         {submitMessage && (
                                             <div className={`p-3 rounded-lg mb-4 text-center text-sm font-bold ${submitMessage.type === 'success' ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
                                                 {submitMessage.text}
+                                            </div>
+                                        )}
+
+                                        {showPinPrompt && (
+                                            <div className="mb-6 animate-in fade-in slide-in-from-bottom-2">
+                                                <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2 text-center">Enter Security PIN from Menu</label>
+                                                <input 
+                                                    type="text" 
+                                                    maxLength={4}
+                                                    value={customerPin}
+                                                    onChange={(e) => setCustomerPin(e.target.value.replace(/[^0-9]/g, ''))}
+                                                    className="w-full bg-stone-100 border-2 border-stone-200 rounded-xl px-4 py-4 text-center text-3xl font-black tracking-[0.5em] focus:border-amber-500 focus:bg-white outline-none transition-all"
+                                                    placeholder="****"
+                                                    autoFocus
+                                                />
+                                                <p className="text-[10px] text-stone-400 mt-2 text-center font-medium">This code is physically written on our table menus.</p>
                                             </div>
                                         )}
 

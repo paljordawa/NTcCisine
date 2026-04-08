@@ -3,15 +3,13 @@ import { db, StoreSettings, eq } from 'astro:db';
 
 export const prerender = false;
 
-export const GET: APIRoute = async ({ request, clientAddress }) => {
+export const GET: APIRoute = async () => {
     try {
         const settings = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1));
         const isPaused = settings.length > 0 ? settings[0].isOrderingPaused : false;
-        const lockedIp = settings.length > 0 ? settings[0].networkIpLock : '127.0.0.1';
+        const storePin = settings.length > 0 ? settings[0].storePin : '0000';
         
-        const yourIpAddress = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || clientAddress || '127.0.0.1';
-
-        return new Response(JSON.stringify({ isOrderingPaused: isPaused, lockedIp, yourIpAddress }), { 
+        return new Response(JSON.stringify({ isOrderingPaused: isPaused, storePin }), { 
             status: 200, headers: { 'Content-Type': 'application/json' } 
         });
     } catch(e) {
@@ -22,30 +20,23 @@ export const GET: APIRoute = async ({ request, clientAddress }) => {
     }
 }
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request }) => {
     try {
         const payload = await request.json();
         
-        const settings = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1));
-        const currentSettings = settings.length > 0 ? settings[0] : { isOrderingPaused: false, networkIpLock: '127.0.0.1' };
+        const settingsList = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1));
+        const currentSettings = settingsList.length > 0 ? settingsList[0] : { isOrderingPaused: false, storePin: '0000' };
 
         let newIsPaused = payload.isOrderingPaused !== undefined ? payload.isOrderingPaused : currentSettings.isOrderingPaused;
-        let newIpLock = currentSettings.networkIpLock;
+        let newStorePin = payload.storePin !== undefined ? payload.storePin : currentSettings.storePin;
 
-        if (payload.lockNetwork === true) {
-            const userIp = request.headers.get('cf-connecting-ip') || request.headers.get('x-real-ip') || request.headers.get('x-forwarded-for') || clientAddress;
-            newIpLock = payload.customIp || userIp || '127.0.0.1'; // Fallback to localhost if entirely untraceable
-        } else if (payload.lockNetwork === false) {
-            newIpLock = null;
-        }
-
-        if (settings.length === 0) {
-            await db.insert(StoreSettings).values({ id: 1, isOrderingPaused: newIsPaused, networkIpLock: newIpLock });
+        if (settingsList.length === 0) {
+            await db.insert(StoreSettings).values({ id: 1, isOrderingPaused: newIsPaused, storePin: newStorePin });
         } else {
-            await db.update(StoreSettings).set({ isOrderingPaused: newIsPaused, networkIpLock: newIpLock }).where(eq(StoreSettings.id, 1));
+            await db.update(StoreSettings).set({ isOrderingPaused: newIsPaused, storePin: newStorePin }).where(eq(StoreSettings.id, 1));
         }
         
-        return new Response(JSON.stringify({ success: true, isOrderingPaused: newIsPaused, lockedIp: newIpLock }), { 
+        return new Response(JSON.stringify({ success: true, isOrderingPaused: newIsPaused, storePin: newStorePin }), { 
             status: 200, headers: { 'Content-Type': 'application/json' } 
         });
     } catch(e) {

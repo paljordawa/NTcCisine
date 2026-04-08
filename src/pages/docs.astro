@@ -78,7 +78,7 @@ import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight } from 'lu
                     </div>
                 </section>
 
-                {/* Wi-Fi Security Order Barrier */}
+                {/* Customer Security PIN */}
                 <section class="bg-white rounded-[2rem] p-8 sm:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
                     <div class="absolute top-0 right-0 p-8 opacity-5">
                         <Lock size={120} />
@@ -87,38 +87,31 @@ import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight } from 'lu
                         <div class="w-10 h-10 bg-indigo-50 rounded-xl flex items-center justify-center border border-indigo-100">
                             <Lock size={20} className="text-indigo-600" />
                         </div>
-                        <h2 class="text-2xl font-black text-gray-900">3. Wi-Fi Order Barrier (Anti-Spam)</h2>
+                        <h2 class="text-2xl font-black text-gray-900">3. Customer Security PIN</h2>
                     </div>
                     <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
                         <p class="text-stone-600 font-medium leading-relaxed">
-                            To prevent malicious internet users from taking photos of your QR codes and submitting fake orders from home, Nomade Cuisine features an invisible <strong>Geographical / Internet IP Lock</strong>.
+                            To ensure only customers physically present in the restaurant can place orders, Nomade Cuisine utilizes a <strong>Daily Security PIN</strong>. This prevents "Remote Spam" where people at home scan photos of your menu and send fake orders to your kitchen.
                         </p>
                         
                         <div class="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-200">
                             <div class="p-6">
-                                <h3 class="text-lg font-black text-gray-900 mb-3">How The Barrier Works</h3>
+                                <h3 class="text-lg font-black text-gray-900 mb-3">How The System Works</h3>
                                 <p class="text-stone-600 font-medium leading-relaxed text-sm">
-                                    When enabled via the <strong>Settings ⚙️ Drawer</strong> on the Counter Dashboard, the system saves the specific Public IP address of the restaurant's internet. 
-                                    Any customer who attempts to place an order will have their phone's IP address silently audited by the backend checkout API. If their phone is not actively connected to the restaurant's local Wi-Fi network, their checkout attempt will be <strong>violently rejected with a 403 Forbidden Error</strong>.
+                                    When a customer clicks <strong>"Send to Counter"</strong>, the website will prompt them to enter a 4-digit code. If they do not enter the correct code, the order is instantly rejected by the server. 
+                                    By writing this code on a physical chalkboard or on your printed menus, you create an "analog geofence" that only physical guests can cross.
                                 </p>
-                                <div class="mt-4 bg-stone-100 border-l-4 border-stone-300 p-4 rounded-r-xl">
-                                    <h4 class="font-bold text-stone-700 text-sm mb-1 flex items-center gap-2">
-                                        <Lock size={16} /> Fail-Secure By Default
-                                    </h4>
-                                    <p class="text-xs font-medium text-stone-600 leading-relaxed">
-                                        If the Counter Dashboard is accessed for the very first time without configuration, the Geofencing Barrier immediately defaults to a highly-restrictive <code>127.0.0.1</code> lock map. Because of this, public customers attempting to checkout will be universally rejected until a manager manually programs in the correct functional Wi-Fi IP address.
-                                    </p>
-                                </div>
                             </div>
                             <div class="p-6 bg-white border-l-4 border-indigo-500">
-                                <h3 class="text-lg font-black text-indigo-900 mb-2">Changing The Router Lock</h3>
+                                <h3 class="text-lg font-black text-indigo-900 mb-2">Changing the PIN</h3>
                                 <p class="text-stone-600 font-medium leading-relaxed text-sm mb-4">
-                                    If your internet service provider changes your restaurant's underlying IP address (or if you move routers), the barrier will accidentally start blocking everyone. To fix this:
+                                    You can change the PIN at any time via the <strong>Settings ⚙️ Drawer</strong> on the Counter Dashboard:
                                 </p>
                                 <ul class="text-sm font-medium text-stone-600 list-disc pl-4 space-y-2">
-                                    <li>Open the Counter Dashboard from a computer physically connected to the restaurant Wi-Fi.</li>
-                                    <li>Click the <strong>Clear</strong> button under the Wi-Fi Order Barrier setting to disable the lock temporarily.</li>
-                                    <li>Type in your current public IP address into the input box and click <strong>Lock</strong>. This explicitly programs the backend API to accept checkout requests originating strictly from that geographical network.</li>
+                                    <li>Enter a new 4-digit number in the <strong>"Customer Order PIN"</strong> box.</li>
+                                    <li>Click <strong>Update</strong> to save the changes.</li>
+                                    <li>Update your physical signage (blackboard/menus) so your customers know the new code.</li>
+                                    <li><strong>Recommendation:</strong> Change this code every morning to prevent old customers from ordering from home.</li>
                                 </ul>
                             </div>
                         </div>

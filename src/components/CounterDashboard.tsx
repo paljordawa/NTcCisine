@@ -65,9 +65,8 @@ export default function CounterDashboard() {
     const [printerIp, setPrinterIp] = useState('192.168.1.106');
     const [printerId, setPrinterId] = useState('local_printer');
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
-    const [lockedIpLocation, setLockedIpLocation] = useState<string | null>(null);
-    const [customIpInput, setCustomIpInput] = useState('');
-    const [yourIpAddress, setYourIpAddress] = useState('');
+    const [storePin, setStorePin] = useState('0000');
+    const [pinInput, setPinInput] = useState('0000');
     const prevOrdersCount = useRef(0);
 
     useEffect(() => {
@@ -171,33 +170,28 @@ export default function CounterDashboard() {
             if (res.ok) {
                 const data = await res.json();
                 setIsPaused(data.isOrderingPaused);
-                setIsPaused(data.isOrderingPaused);
-                setLockedIpLocation(data.lockedIp || '127.0.0.1');
-                setCustomIpInput(data.lockedIp || '127.0.0.1');
-
-                // Bypass local loopback (::1) and grab the true external Router WAN IP
-                try {
-                    const wanRes = await fetch('https://api.ipify.org?format=json');
-                    const wanData = await wanRes.json();
-                    setYourIpAddress(wanData.ip);
-                } catch(err) {
-                    setYourIpAddress(data.yourIpAddress || 'Unknown');
-                }
+                setStorePin(data.storePin || '0000');
+                setPinInput(data.storePin || '0000');
             }
         } catch(e) {}
     };
 
-    const saveNetworkLock = async (ipToSave: string) => {
+    const saveStorePin = async (newPin: string) => {
         try {
             const res = await fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ lockNetwork: true, customIp: ipToSave })
+                body: JSON.stringify({ storePin: newPin })
             });
             const data = await res.json();
-            setLockedIpLocation(data.lockedIp || '127.0.0.1');
-            setCustomIpInput(data.lockedIp || '127.0.0.1');
+            setStorePin(data.storePin || '0000');
+            setPinInput(data.storePin || '0000');
         } catch(e) { }
+    };
+
+    const generateRandomPin = () => {
+        const newPin = Math.floor(1000 + Math.random() * 9000).toString();
+        setPinInput(newPin);
     };
 
     const togglePause = async () => {
@@ -447,9 +441,21 @@ export default function CounterDashboard() {
                         <Settings size={20} strokeWidth={2.5} />
                     </button>
                     
-                    <div className="hidden sm:flex items-center gap-2 text-stone-600 font-bold bg-white border border-stone-200 px-4 py-2 rounded-full shadow-sm">
-                        <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
-                        Sync
+                    <div className="hidden sm:flex items-center gap-3">
+                        <div className={`flex items-center gap-2 px-4 py-2 rounded-full font-bold text-xs transition-all shadow-sm border ${isPaused ? 'bg-red-50 text-red-600 border-red-100' : 'bg-emerald-50 text-emerald-600 border-emerald-100'}`}>
+                            <div className={`w-2 h-2 rounded-full ${isPaused ? 'bg-red-500' : 'bg-emerald-500 animate-pulse'}`}></div>
+                            {isPaused ? 'SERVICE PAUSED' : 'SERVICE LIVE'}
+                        </div>
+                        
+                        <div className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 border border-indigo-100 rounded-full font-bold text-xs shadow-sm shadow-indigo-100/50">
+                            <span className="text-[10px] opacity-60 uppercase tracking-widest">Order PIN:</span>
+                            <span className="font-mono tracking-widest text-sm">{storePin}</span>
+                        </div>
+                        
+                        <div className="flex items-center gap-2 text-stone-600 font-bold bg-white border border-stone-200 px-4 py-2 rounded-full shadow-sm">
+                            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 animate-pulse"></span>
+                            Sync
+                        </div>
                     </div>
                 </div>
             </div>
@@ -796,35 +802,33 @@ export default function CounterDashboard() {
                                 <div className="border-t border-stone-100 pt-4 mt-2">
                                     <div className="flex flex-col gap-2">
                                         <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 flex items-center justify-between">
-                                            <span>Wi-Fi Order Barrier</span>
-                                            <span className="text-emerald-500 flex items-center gap-1"><Check size={10}/> CONFIGURED</span>
+                                            <span>Customer Order PIN</span>
+                                            <span className="text-emerald-500 flex items-center gap-1"><Check size={10}/> ACTIVE</span>
                                         </label>
                                         <p className="text-[10px] text-stone-400 leading-relaxed pl-1 pb-1">
-                                            Allow orders originating only from this Public IP Address:
-                                            <br/>
-                                            <span className="font-bold text-stone-600 flex items-center justify-between mt-1">
-                                                <span>Your Router IP: <span className="font-mono bg-stone-100 px-1 py-0.5 rounded text-indigo-600">{yourIpAddress}</span></span>
-                                                <button 
-                                                    onClick={() => saveNetworkLock(yourIpAddress)}
-                                                    className="text-indigo-500 hover:text-indigo-700 underline active:scale-95 transition-transform"
-                                                >
-                                                    Use Current Router
-                                                </button>
-                                            </span>
+                                            Customers must enter this 4-digit code to place an order. Change this daily for maximum security.
                                         </p>
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 relative">
                                             <input 
                                                 type="text" 
-                                                value={customIpInput} 
-                                                onChange={(e) => setCustomIpInput(e.target.value)}
-                                                className="w-full bg-stone-50 rounded-xl px-3 py-2 font-mono text-sm transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-indigo-700 border border-indigo-200 shadow-inner"
-                                                placeholder="e.g. 192.168.1.1"
+                                                maxLength={4}
+                                                value={pinInput} 
+                                                onChange={(e) => setPinInput(e.target.value.replace(/[^0-9]/g, ''))}
+                                                className="w-full bg-stone-50 rounded-xl px-3 py-2 font-mono text-xl tracking-[0.5em] text-center transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-indigo-700 border border-indigo-200 shadow-inner"
+                                                placeholder="0000"
                                             />
                                             <button 
-                                                onClick={() => saveNetworkLock(customIpInput)}
+                                                onClick={generateRandomPin}
+                                                className="absolute right-24 top-1/2 -translate-y-1/2 p-2 text-stone-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
+                                                title="Generate Random PIN"
+                                            >
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
+                                            </button>
+                                            <button 
+                                                onClick={() => saveStorePin(pinInput)}
                                                 className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none whitespace-nowrap"
                                             >
-                                                {lockedIpLocation === customIpInput ? 'Saved' : 'Update'}
+                                                {storePin === pinInput ? 'Saved' : 'Update'}
                                             </button>
                                         </div>
                                     </div>
