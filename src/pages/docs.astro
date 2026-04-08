@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight } from 'lucide-react';
+import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal } from 'lucide-react';
 ---
 
 <Layout title="System Documentation - Nomade Cuisine">
@@ -157,17 +157,37 @@ import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight } from 'lu
                             </div>
 
                             <div class="p-6 bg-white">
-                                <h3 class="text-lg font-black text-gray-900 mb-3">Mode 2: Local Proxy Tool</h3>
+                                <h3 class="text-lg font-black text-gray-900 mb-3 text-emerald-700">Mode 2: Local Proxy Tool (Recommended)</h3>
                                 <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
-                                    <strong>How it works:</strong> Web browsers have a universal rule—they always trust the physical computer they are currently running on, representing it securely as <code class="bg-stone-50 font-bold px-1 py-0.5 rounded border border-stone-100 text-emerald-600 tracking-tighter">http://localhost:8000</code>.
+                                    <strong>How it works:</strong> This mode uses a tiny "invisible helper" script running on your counter computer to bridge the gap between building on the web and printing locally.
                                 </p>
-                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
-                                    <strong>The Solution:</strong> If you cannot or do not want to override Chrome's security settings manually, you can run the bundled Node.js script. When you print, the dashboard beams the XML ticket securely to the trusted <code>localhost</code> backdoor running on the physical Windows machine. The script then silently catches the ticket and relays it over the Wi-Fi to the Epson Printer.
-                                </p>
-                                <ul class="text-sm font-medium text-stone-600 list-disc pl-4 space-y-1">
-                                    <li>Open the <code>/printer-proxy</code> folder located in the project's codebase.</li>
-                                    <li>Execute <code>npm install</code> then <code>npm start</code> to let it run quietly in the background on your Windows counter machine.</li>
-                                </ul>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                                    <div class="space-y-3">
+                                        <h4 class="font-bold text-stone-700 text-sm">1. The Security Hurdle</h4>
+                                        <p class="text-xs text-stone-500 leading-relaxed">
+                                            Modern browsers block "Mixed Content"—they won't let a secure website (HTTPS) talk to an insecure local device (HTTP). This usually blocks direct printing.
+                                        </p>
+                                    </div>
+                                    <div class="space-y-3">
+                                        <h4 class="font-bold text-stone-700 text-sm">2. The "Localhost" Bypass</h4>
+                                        <p class="text-xs text-stone-500 leading-relaxed">
+                                            Browsers treat <code class="bg-stone-50 px-1 border border-stone-100 rounded">localhost</code> as a trusted zone. By running a local script, the dashboard can securely "hand over" the print data to your computer, which then delivers it to the printer.
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl">
+                                    <h4 class="font-bold text-indigo-900 text-sm mb-2 flex items-center gap-2">
+                                        <Terminal size={16} /> How to Start the Proxy
+                                    </h4>
+                                    <p class="text-xs text-indigo-700 mb-3">Execute these commands in your terminal on the counter computer:</p>
+                                    <pre class="bg-stone-900 text-stone-300 p-3 rounded-lg text-[11px] font-mono leading-relaxed overflow-x-auto">
+cd printer-proxy
+npm install
+node index.js</pre>
+                                    <p class="text-xs text-indigo-700 mt-3 font-medium italic">
+                                        Once the terminal says "Proxy Server ACTIVE", toggle the dashboard settings to "Local Proxy".
+                                    </p>
+                                </div>
                             </div>
                         </div>
 
