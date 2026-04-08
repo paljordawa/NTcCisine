@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal } from 'lucide-react';
+import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal, Search } from 'lucide-react';
 ---
 
 <Layout title="System Documentation - Nomade Cuisine">
@@ -187,6 +187,18 @@ node index.js</pre>
                                     <p class="text-xs text-indigo-700 mt-3 font-medium italic">
                                         Once the terminal says "Proxy Server ACTIVE", toggle the dashboard settings to "Local Proxy".
                                     </p>
+                                </div>
+
+                                <div class="mt-4 p-4 bg-emerald-50 border-2 border-emerald-100 rounded-xl flex items-start gap-4">
+                                    <div class="bg-emerald-500 p-2 rounded-lg text-white shadow-sm">
+                                        <Search size={18} />
+                                    </div>
+                                    <div>
+                                        <h4 class="font-bold text-emerald-900 text-sm mb-1 uppercase tracking-tight">One-Click Auto Scan</h4>
+                                        <p class="text-xs text-emerald-700 leading-relaxed font-medium">
+                                            Don't know your printer's IP? No problem. Once the proxy is running, click the **"Scan Network"** button in your settings. The system will automatically probe your entire Wi-Fi subnet and find the printer for you in seconds.
+                                        </p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
