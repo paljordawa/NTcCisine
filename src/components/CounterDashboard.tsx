@@ -736,22 +736,36 @@ export default function CounterDashboard() {
                                     ))}
                                 </div>
 
-                                <div className="flex flex-row items-center justify-between lg:justify-end gap-8 pt-4 lg:pt-0 border-t border-stone-100 lg:border-t-0 w-full lg:w-auto shrink-0 lg:pl-6 lg:border-l">
+                                <div className="flex flex-row items-center justify-between lg:justify-end gap-6 pt-4 lg:pt-0 border-t border-stone-100 lg:border-t-0 w-full lg:w-auto shrink-0 lg:pl-6 lg:border-l">
                                     <div className="flex flex-col lg:items-end">
                                         <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Total</span>
-                                        <span className="text-2xl font-black text-emerald-700">CHF {order.cartTotal.toFixed(2)}</span>
+                                        <span className="text-xl font-black text-emerald-700">CHF {order.cartTotal.toFixed(2)}</span>
                                     </div>
                                     <div className="flex flex-col lg:items-end">
                                         <span className="text-[10px] text-stone-500 font-bold uppercase tracking-widest mb-1">Status</span>
-                                        {order.status === 'accepted' ? (
-                                            <span className="flex items-center gap-2 px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-xl text-sm shadow-sm">
-                                                <Check size={16} /> Accepted
+                                        {order.status === 'ready' ? (
+                                            <span className="flex items-center gap-2 px-3 py-1.5 bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold rounded-lg text-xs shadow-sm">
+                                                <Check size={14} /> Completed
+                                            </span>
+                                        ) : order.status === 'accepted' ? (
+                                            <span className="flex items-center gap-2 px-3 py-1.5 bg-amber-50 text-amber-700 border border-amber-200 font-bold rounded-lg text-xs shadow-sm">
+                                                <Printer size={14} /> Accepted
                                             </span>
                                         ) : (
-                                            <span className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-700 border border-red-200 font-bold rounded-xl text-sm shadow-sm">
-                                                <X size={16} /> Rejected
+                                            <span className="flex items-center gap-2 px-3 py-1.5 bg-red-50 text-red-700 border border-red-200 font-bold rounded-lg text-xs shadow-sm">
+                                                <X size={14} /> Rejected
                                             </span>
                                         )}
+                                    </div>
+                                    
+                                    <div className="flex flex-col lg:items-end">
+                                        <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest mb-1">Action</span>
+                                        <button 
+                                            onClick={() => handleSilentPrint(order)}
+                                            className="flex items-center gap-2 px-4 py-2 bg-stone-100 hover:bg-emerald-600 hover:text-white border border-stone-200 text-stone-600 font-bold rounded-xl text-xs transition-all active:scale-95 shadow-sm"
+                                        >
+                                            <Printer size={14} /> Print
+                                        </button>
                                     </div>
                                 </div>
                             </div>
