@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
-import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info, Flame, Check } from 'lucide-react';
+import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info, Flame } from 'lucide-react';
 
 interface CartItem {
     item: MenuItem;
@@ -24,105 +24,6 @@ export default function Menu({ initialData }: MenuProps) {
     const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
     const [selectedItem, setSelectedItem] = useState<any>(null);
     const [tableNumber, setTableNumber] = useState<string | null>(null);
-
-    const [isPaused, setIsPaused] = useState<boolean>(false);
-    const [trackingOrderId, setTrackingOrderId] = useState<string | null>(null);
-    const [lastKnownStatus, setLastKnownStatus] = useState<string>('pending');
-    
-    const [confirmedOrder, setConfirmedOrder] = useState<any>(null);
-    const [readyOrder, setReadyOrder] = useState<any>(null);
-    const [rejectedOrder, setRejectedOrder] = useState<boolean>(false);
-
-    const playSuccessDing = () => {
-        try {
-            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const gainNode = ctx.createGain();
-            gainNode.connect(ctx.destination);
-            gainNode.gain.setValueAtTime(0, ctx.currentTime);
-            
-            // Uplifting arpeggio (C5, E5, G5, C6)
-            const freqs = [523.25, 659.25, 783.99, 1046.50];
-            freqs.forEach((freq, i) => {
-                const osc = ctx.createOscillator();
-                osc.type = 'sine';
-                osc.frequency.value = freq;
-                osc.connect(gainNode);
-                osc.start(ctx.currentTime + i * 0.1);
-                
-                gainNode.gain.setValueAtTime(0.2, ctx.currentTime + i * 0.1);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.1 + 0.5);
-                
-                osc.stop(ctx.currentTime + i * 0.1 + 0.5);
-            });
-        } catch(e) {}
-    };
-
-    const playReadyDing = () => {
-        try {
-            const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-            const gainNode = ctx.createGain();
-            gainNode.connect(ctx.destination);
-            gainNode.gain.setValueAtTime(0, ctx.currentTime);
-            // Big triumphant chord 
-            const freqs = [523.25, 659.25, 783.99, 1046.50]; // C major
-            freqs.forEach((freq, i) => {
-                const osc = ctx.createOscillator();
-                osc.type = 'triangle';
-                osc.frequency.value = freq;
-                osc.connect(gainNode);
-                osc.start(ctx.currentTime);
-                gainNode.gain.setValueAtTime(0.3, ctx.currentTime);
-                gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 2.0);
-                osc.stop(ctx.currentTime + 2.0);
-            });
-        } catch(e) {}
-    };
-
-    React.useEffect(() => {
-        const checkSettings = async () => {
-            try {
-                const res = await fetch('/api/settings');
-                if (res.ok) {
-                    const data = await res.json();
-                    setIsPaused(data.isOrderingPaused);
-                }
-            } catch(e) {}
-        };
-        checkSettings();
-        const interval = setInterval(checkSettings, 30000); // Check every 30s
-        return () => clearInterval(interval);
-    }, []);
-
-    React.useEffect(() => {
-        let interval: any;
-        if (trackingOrderId) {
-            interval = setInterval(async () => {
-                try {
-                    const res = await fetch(`/api/status?id=${trackingOrderId}`);
-                    if (res.ok) {
-                        const orderData = await res.json();
-                        if (orderData.status !== lastKnownStatus) {
-                            setLastKnownStatus(orderData.status);
-                            
-                            if (orderData.status === 'accepted') {
-                                setConfirmedOrder(orderData);
-                                playSuccessDing();
-                            } else if (orderData.status === 'ready') {
-                                setReadyOrder(orderData);
-                                setTrackingOrderId(null);
-                                setConfirmedOrder(null);
-                                playReadyDing();
-                            } else if (orderData.status === 'rejected') {
-                                setRejectedOrder(true);
-                                setTrackingOrderId(null);
-                            }
-                        }
-                    }
-                } catch(e) { }
-            }, 5000);
-        }
-        return () => clearInterval(interval);
-    }, [trackingOrderId, lastKnownStatus]);
 
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
@@ -250,8 +151,6 @@ export default function Menu({ initialData }: MenuProps) {
 
             if (response.ok) {
                 setSubmitMessage({ type: 'success', text: `Order sent! Ticket: ${data.receipt_id || 'N/A'}` });
-                setTrackingOrderId(data.receipt_id);
-                setLastKnownStatus('pending');
                 // Clear cart after successful checkout
                 setTimeout(() => {
                     setCartItems([]);
@@ -282,16 +181,9 @@ export default function Menu({ initialData }: MenuProps) {
 
     return (
         <div className="w-full relative">
-            
-            {/* Paused Banner */}
-            {isPaused && (
-                <div className="bg-red-500 text-white font-bold text-center py-2.5 px-4 shadow-xl z-30 flex items-center justify-center gap-2 text-sm">
-                    <X size={18} strokeWidth={3} /> Kitchen is currently at capacity. Ordering is temporarily paused.
-                </div>
-            )}
-            
+
             {/* View Toggle - Top Left (Sitting safely above the transition line) */}
-            <div className={`absolute ${isPaused ? 'top-2 sm:top-6' : '-top-12 sm:-top-8'} left-4 sm:left-8 z-20 flex gap-4 transition-all`}>
+            <div className="absolute -top-12 left-4 sm:-top-8 sm:left-8 z-20 flex gap-4">
                 <button
                     onClick={() => setViewMode('grid')}
                     className={`transition-all duration-300 ${viewMode === 'grid' ? 'text-amber-600 scale-110 drop-shadow-sm' : 'text-stone-400 hover:text-gray-900 hover:scale-105'}`}
@@ -309,14 +201,14 @@ export default function Menu({ initialData }: MenuProps) {
             </div>
 
             {/* Header Right Content (Table Number & About) */}
-            <div className={`absolute ${isPaused ? 'top-2 sm:top-6' : '-top-12 sm:-top-8'} right-4 sm:right-8 z-20 flex items-center gap-2 sm:gap-3 transition-all`}>
+            <div className="absolute -top-12 right-4 sm:-top-8 sm:right-8 z-20 flex items-center gap-2 sm:gap-3">
                 {tableNumber && (
                     <div className="flex items-center gap-1.5 text-emerald-700 bg-emerald-50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-emerald-200 shadow-sm transition-all duration-300">
                         <span className="text-[10px] sm:text-xs uppercase font-black tracking-widest opacity-70">Table</span>
                         <span className="text-sm sm:text-base font-black">{tableNumber}</span>
                     </div>
                 )}
-                
+
                 <button
                     onClick={() => setIsAboutOpen(true)}
                     className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-all duration-300 hover:scale-105 bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 shadow-sm"
@@ -385,7 +277,7 @@ export default function Menu({ initialData }: MenuProps) {
 
                     {/* Today's Special Showcase Banner -> Now a tiny functional button */}
                     {activeMainId === null && todaysSpecial && (
-                        <div 
+                        <div
                             onClick={() => setSelectedItem(todaysSpecial)}
                             className="w-full max-w-md mx-auto mb-8 sm:mb-10 relative group cursor-pointer transform transition-all duration-300 hover:-translate-y-1 active:scale-95"
                         >
@@ -436,9 +328,8 @@ export default function Menu({ initialData }: MenuProps) {
                                                 )}
                                                 {item.tags?.slice(0, 1).map((tag: string) => (
                                                     tag.toLowerCase() !== 'special' ? (
-                                                        <span key={tag} className={`px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-0.5 ${
-                                                            tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-600'
-                                                        }`}>
+                                                        <span key={tag} className={`px-2 py-0.5 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-0.5 ${tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-600'
+                                                            }`}>
                                                             {tag.toLowerCase() === 'spicy' && <Flame size={10} className="fill-white" />}
                                                             {tag}
                                                         </span>
@@ -517,9 +408,8 @@ export default function Menu({ initialData }: MenuProps) {
                                                 )}
                                                 {item.tags?.slice(0, 1).map((tag: string) => (
                                                     tag.toLowerCase() !== 'special' ? (
-                                                        <span key={tag} className={`px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full border shadow-sm inline-flex items-center gap-1 ${
-                                                            tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white border-red-400 shadow-red-500/40' : 'bg-white/95 text-stone-600 border-stone-200'
-                                                        }`}>
+                                                        <span key={tag} className={`px-2 py-1 text-[8px] lg:text-[10px] xl:text-[11px] font-black uppercase tracking-wider backdrop-blur-md rounded-full border shadow-sm inline-flex items-center gap-1 ${tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white border-red-400 shadow-red-500/40' : 'bg-white/95 text-stone-600 border-stone-200'
+                                                            }`}>
                                                             {tag.toLowerCase() === 'spicy' && <Flame size={12} className="fill-white" />}
                                                             {tag}
                                                         </span>
@@ -589,39 +479,38 @@ export default function Menu({ initialData }: MenuProps) {
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 sm:p-6 opacity-100 transition-opacity">
                     {/* Backdrop */}
                     <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm transition-opacity" onClick={() => setSelectedItem(null)}></div>
-                    
+
                     {/* Modal Container */}
                     <div className="relative bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl z-10 flex flex-col max-h-[90vh] md:max-h-[85vh] animate-in fade-in zoom-in-95 duration-200">
                         {/* Close Button */}
-                        <button 
+                        <button
                             onClick={() => setSelectedItem(null)}
                             className="absolute top-4 right-4 z-20 w-8 h-8 sm:w-10 sm:h-10 bg-white/50 backdrop-blur-md rounded-full flex items-center justify-center text-gray-900 hover:bg-white hover:text-red-500 transition-colors shadow-sm"
                         >
                             <X size={20} />
                         </button>
-                        
+
                         {/* Huge Image */}
                         <div className="w-full h-56 sm:h-72 bg-stone-100 relative shrink-0">
                             <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" />
                             <div className="absolute top-4 left-4 flex flex-wrap gap-1.5">
                                 {selectedItem.tags?.map((tag: string) => (
-                                    <span key={tag} className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-1 ${
-                                        tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-700'
-                                    }`}>
+                                    <span key={tag} className={`px-3 py-1.5 text-[10px] sm:text-xs font-black uppercase tracking-widest backdrop-blur-md rounded-full shadow-sm inline-flex items-center gap-1 ${tag.toLowerCase() === 'spicy' ? 'bg-red-500 text-white shadow-red-500/40' : 'bg-white/95 text-stone-700'
+                                        }`}>
                                         {tag.toLowerCase() === 'spicy' && <Flame size={14} className="fill-white" />}
                                         {tag}
                                     </span>
                                 ))}
                             </div>
                         </div>
-                        
+
                         {/* Detailed Content */}
                         <div className="p-5 sm:p-7 overflow-y-auto flex flex-col hide-scrollbar">
                             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight mb-3 tracking-tight">{selectedItem.name}</h2>
                             {selectedItem.description && (
                                 <p className="text-xs sm:text-sm text-stone-500 mb-6 leading-relaxed font-medium">{selectedItem.description}</p>
                             )}
-                            
+
                             {/* Variant Configuration */}
                             {selectedItem.variants && selectedItem.variants.length > 1 && (
                                 <div className="mb-6 bg-stone-50 p-4 rounded-3xl border border-stone-100">
@@ -638,7 +527,7 @@ export default function Menu({ initialData }: MenuProps) {
                                     </select>
                                 </div>
                             )}
-                            
+
                             {/* Add to Cart Floating Trigger */}
                             <div className="mt-auto pt-6 flex items-center justify-between border-t border-stone-50">
                                 <div className="flex flex-col">
@@ -649,7 +538,7 @@ export default function Menu({ initialData }: MenuProps) {
                                             : selectedItem.price}
                                     </span>
                                 </div>
-                                <button 
+                                <button
                                     onClick={(e) => { handleAddToCart(selectedItem, e); setSelectedItem(null); }}
                                     className="bg-amber-500 hover:bg-gray-900 text-white px-8 py-4 sm:py-4 rounded-3xl sm:rounded-[2rem] text-sm sm:text-base font-black shadow-xl shadow-amber-500/30 hover:shadow-gray-900/30 transition-all duration-300 flex items-center gap-2 transform active:scale-95"
                                 >
@@ -772,26 +661,17 @@ export default function Menu({ initialData }: MenuProps) {
                                             </div>
                                         )}
 
-                                        {isPaused ? (
-                                            <button
-                                                disabled
-                                                className="w-full py-4 bg-stone-300 text-stone-500 text-lg font-black rounded-xl cursor-not-allowed border-2 border-stone-200"
-                                            >
-                                                Ordering Paused
-                                            </button>
-                                        ) : (
-                                            <button
-                                                onClick={handleCheckout}
-                                                disabled={isSubmitting || cartItems.length === 0}
-                                                className="w-full py-4 bg-amber-600 hover:bg-stone-900 disabled:bg-stone-200 disabled:text-stone-500 disabled:transform-none disabled:shadow-none text-white text-lg font-black rounded-xl shadow-lg shadow-amber-600/40 hover:shadow-stone-900/30 transition-all transform hover:-translate-y-1 flex justify-center items-center"
-                                            >
-                                                {isSubmitting ? (
-                                                    <div className="w-6 h-6 border-2 border-stone-200 border-t-white rounded-full animate-spin"></div>
-                                                ) : (
-                                                    'Send to Counter'
-                                                )}
-                                            </button>
-                                        )}
+                                        <button
+                                            onClick={handleCheckout}
+                                            disabled={isSubmitting || cartItems.length === 0}
+                                            className="w-full py-4 bg-amber-600 hover:bg-stone-900 disabled:bg-stone-200 disabled:text-stone-500 disabled:transform-none disabled:shadow-none text-white text-lg font-black rounded-xl shadow-lg shadow-amber-600/40 hover:shadow-stone-900/30 transition-all transform hover:-translate-y-1 flex justify-center items-center"
+                                        >
+                                            {isSubmitting ? (
+                                                <div className="w-6 h-6 border-2 border-stone-200 border-t-white rounded-full animate-spin"></div>
+                                            ) : (
+                                                'Send to Counter'
+                                            )}
+                                        </button>
                                     </div>
                                 </>
                             )}
@@ -823,7 +703,7 @@ export default function Menu({ initialData }: MenuProps) {
                             </button>
 
                             <div className="absolute bottom-4 left-6 text-white max-w-[80%]">
-                                <h2 className="text-2xl sm:text-3xl font-black mb-1 drop-shadow-lg leading-tight">Nomade Tibetan Cuisine</h2>
+                                <h2 className="text-2xl sm:text-3xl font-black mb-1 drop-shadow-lg leading-tight">Nomade - Cuisine Tibétaine</h2>
                                 <p className="text-amber-400 font-bold tracking-widest uppercase text-[10px] sm:text-xs drop-shadow-md">Authentic Himalayan Flavors</p>
                             </div>
                         </div>
@@ -845,103 +725,18 @@ export default function Menu({ initialData }: MenuProps) {
                             <div className="mt-8 pt-6 border-t border-stone-200 grid grid-cols-2 gap-6">
                                 <div>
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Location</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">1003 Lausanne<br />Switzerland</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Faubourg de l'Hôpital 31, Neuchâtel,<br />Switzerland 2000</p>
                                 </div>
                                 <div className="text-right sm:text-left">
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Hours</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Mon-Sat: 11:30 - 22:00<br />Sun: Closed</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Lundi-Samedi:<br />  09h00-14h30 I 18h00-22h00 </p>
                                 </div>
                                 <div className="col-span-2">
                                     <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Contact</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">info@nomadecuisine.ch<br />+41 21 123 45 67</p>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">nomade.cuisinetib@gmail.com<br />+41 0327213444</p>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Background Polling Notice (Optional mini indicator) */}
-            {trackingOrderId && !isCartOpen && (
-                <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 bg-gray-900 border border-stone-700 text-white px-4 py-2 rounded-full shadow-lg shadow-gray-900/20 font-bold text-xs flex items-center gap-2 animate-bounce">
-                    <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                    {lastKnownStatus === 'pending' ? 'Waiting for Kitchen...' : 'Chef is cooking...'}
-                </div>
-            )}
-
-            {/* Confirmation Modals */}
-            {readyOrder && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-blue-900/40 backdrop-blur-md" onClick={() => setReadyOrder(null)}></div>
-                    <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center transform flex flex-col items-center">
-                        <div className="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mb-6 text-blue-500 shadow-inner translate-y-0 hover:-translate-y-1 transition-transform">
-                            <ConciergeBell size={40} className="animate-[bounce_1s_ease-in-out_infinite]" />
-                        </div>
-                        <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Order Ready!</h2>
-                        <p className="text-stone-500 font-medium mb-6">Your order is ready. Please come to the counter to collect it!</p>
-                        
-                        <div className="bg-stone-50 w-full rounded-2xl border border-stone-200 p-4 mb-6 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-400/10 rounded-full blur-2xl pointer-events-none mix-blend-overlay"></div>
-                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest block mb-1">Ticket #</span>
-                            <span className="font-mono text-2xl font-bold tracking-wider text-blue-700 bg-white px-4 py-2 border border-stone-100 rounded-xl shadow-sm inline-block relative z-10">
-                                {readyOrder.id.slice(0, 6).toUpperCase()}
-                            </span>
-                        </div>
-                        
-                        <button 
-                            onClick={() => setReadyOrder(null)}
-                            className="w-full py-4 text-white bg-blue-600 hover:bg-blue-700 rounded-2xl font-bold transition-all shadow-lg active:scale-95"
-                        >
-                            Got it, On my way!
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {confirmedOrder && !readyOrder && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-emerald-900/40 backdrop-blur-md" onClick={() => setConfirmedOrder(null)}></div>
-                    <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center transform flex flex-col items-center">
-                        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mb-6 text-green-500 shadow-inner translate-y-0 hover:-translate-y-1 transition-transform">
-                            <Check size={40} className="animate-[bounce_1s_ease-in-out_infinite]" />
-                        </div>
-                        <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Order Confirmed!</h2>
-                        <p className="text-stone-500 font-medium mb-6">The kitchen has accepted your ticket and is preparing it now.</p>
-                        
-                        <div className="bg-stone-50 w-full rounded-2xl border border-stone-200 p-4 mb-6 relative overflow-hidden">
-                            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-400/10 rounded-full blur-2xl pointer-events-none mix-blend-overlay"></div>
-                            <span className="text-[10px] text-stone-400 font-bold uppercase tracking-widest block mb-1">Ticket #</span>
-                            <span className="font-mono text-2xl font-bold tracking-wider text-stone-700 bg-white px-4 py-2 border border-stone-100 rounded-xl shadow-sm inline-block relative z-10">
-                                {confirmedOrder.id.slice(0, 6).toUpperCase()}
-                            </span>
-                        </div>
-                        
-                        <button 
-                            onClick={() => setConfirmedOrder(null)}
-                            className="w-full py-4 text-white bg-gray-900 hover:bg-stone-800 rounded-2xl font-bold transition-all shadow-lg active:scale-95"
-                        >
-                            Awesome, Thanks!
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {rejectedOrder && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-red-900/40 backdrop-blur-md" onClick={() => setRejectedOrder(false)}></div>
-                    <div className="relative bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full text-center transform flex flex-col items-center">
-                        <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6 text-red-500 shadow-inner">
-                            <X size={40} />
-                        </div>
-                        <h2 className="text-3xl font-black text-gray-900 mb-2 tracking-tight">Order Declined</h2>
-                        <p className="text-stone-500 font-medium mb-6">Unfortunately, the counter could not accept your order at this time. Please speak to staff.</p>
-                        
-                        <button 
-                            onClick={() => setRejectedOrder(false)}
-                            className="w-full py-4 text-white bg-gray-900 hover:bg-stone-800 rounded-2xl font-bold transition-all active:scale-95"
-                        >
-                            Close
-                        </button>
                     </div>
                 </div>
             )}
