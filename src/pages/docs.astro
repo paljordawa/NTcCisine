@@ -190,7 +190,29 @@ node index.js</pre>
                                 </div>
                             </div>
                         </div>
-
+                        <div class="mt-6 bg-white border border-stone-100 rounded-2xl p-6 shadow-sm">
+                            <h3 class="text-sm font-black text-stone-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                                <span class="w-2 h-2 bg-amber-500 rounded-full"></span> Finding Your Printer Device ID
+                            </h3>
+                            <p class="text-stone-600 font-medium leading-relaxed text-sm mb-4">
+                                The <strong>Device ID</strong> (or <code>devid</code>) is a unique name used by the Epson software to route print jobs. By default, your printer is named:
+                                <code class="bg-stone-50 font-bold px-2 py-1 ml-1 rounded border border-stone-200 text-indigo-600">local_printer</code>
+                            </p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                    <h4 class="font-bold text-stone-800 text-xs mb-2 uppercase">A. Web Browser Method</h4>
+                                    <p class="text-[11px] text-stone-500 leading-relaxed font-medium">
+                                        Type the printer's IP (e.g. <code>192.168.1.106</code>) into Chrome. Look for <strong>"Device ID"</strong> under the <strong>ePOS-Print</strong> settings menu.
+                                    </p>
+                                </div>
+                                <div class="bg-stone-50 p-4 rounded-xl border border-stone-200">
+                                    <h4 class="font-bold text-stone-800 text-xs mb-2 uppercase">B. Self-Test Method</h4>
+                                    <p class="text-[11px] text-stone-500 leading-relaxed font-medium">
+                                        Turn the printer off. Hold the <strong>FEED</strong> button and turn it back on. The printed slip will list the ID under <strong>ePOS-Print Details</strong>.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </div>
