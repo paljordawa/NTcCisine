@@ -67,6 +67,7 @@ export default function CounterDashboard() {
     const [isSettingsOpen, setIsSettingsOpen] = useState(false);
     const [storePin, setStorePin] = useState('0000');
     const [pinInput, setPinInput] = useState('0000');
+    const [isScanning, setIsScanning] = useState(false);
     const prevOrdersCount = useRef(0);
 
     useEffect(() => {
@@ -96,6 +97,24 @@ export default function CounterDashboard() {
     const updatePrinterId = (val: string) => {
         setPrinterId(val);
         localStorage.setItem('printerId', val);
+    };
+
+    const handleScan = async () => {
+        setIsScanning(true);
+        try {
+            const res = await fetch('http://localhost:8000/scan');
+            const data = await res.json();
+            if (data.success) {
+                updatePrinterIp(data.ip);
+                alert(`Printer found and updated to: ${data.ip}`);
+            } else {
+                alert(data.message || "No printers found. Please check your network and ensure Proxy is running.");
+            }
+        } catch (e) {
+            alert("Connection to Proxy failed. Please ensure the 'printer-proxy' script is running on your computer.");
+        } finally {
+            setIsScanning(false);
+        }
     };
 
     const playDing = () => {
@@ -874,7 +893,16 @@ export default function CounterDashboard() {
                                     </button>
                                 </div>
                                 <div className="flex flex-col gap-2 mt-2">
-                                    <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1">IP Address</label>
+                                    <div className="flex items-center justify-between pl-1">
+                                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest">IP Address</label>
+                                        <button 
+                                            onClick={handleScan}
+                                            disabled={isScanning || printerMode !== 'proxy'}
+                                            className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded transition-all ${isScanning ? 'bg-amber-100 text-amber-600 animate-pulse' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 active:scale-95 disabled:opacity-30 disabled:grayscale'}`}
+                                        >
+                                            {isScanning ? 'Scanning...' : 'Scan Network'}
+                                        </button>
+                                    </div>
                                     <input 
                                         type="text" 
                                         value={printerIp} 
