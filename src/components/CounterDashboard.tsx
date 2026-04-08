@@ -222,8 +222,14 @@ export default function CounterDashboard() {
             });
 
             if (res.ok) {
-                // Immediately remove from UI
-                setOrders(prev => prev.filter(o => o.id !== orderId));
+                if (action === 'accept') {
+                    handleSilentPrint(order, () => {
+                        setOrders(prev => prev.filter(o => o.id !== orderId));
+                    });
+                } else {
+                    // Immediately remove from UI
+                    setOrders(prev => prev.filter(o => o.id !== orderId));
+                }
             } else {
                 alert(`Failed to ${action} order!`);
             }
@@ -232,14 +238,60 @@ export default function CounterDashboard() {
         }
     };
 
-    const handlePrint = (orderId: string) => {
-        setPrintingOrderId(orderId);
-        // Small delay to let React render the print classes
-        setTimeout(() => {
-            window.print();
-            // Remove print classes right after the print dialog closes
-            setTimeout(() => setPrintingOrderId(null), 100);
-        }, 100);
+    const escapeXML = (str: string) => str.replace(/[<>&'"]/g, (c) => {
+        switch (c) {
+            case '<': return '&lt;';
+            case '>': return '&gt;';
+            case '&': return '&amp;';
+            case '\'': return '&apos;';
+            case '"': return '&quot;';
+            default: return c;
+        }
+    });
+
+    const handleSilentPrint = async (order: Order, onPrintDone?: () => void) => {
+        try {
+            const items = typeof order.cartItems === 'string' ? JSON.parse(order.cartItems) : order.cartItems;
+            
+            let xmlContent = `<epos-print xmlns="http://www.epson-pos.com/schemas/2011/03/epos-print">`;
+            xmlContent += `<text align="center" smooth="true" dw="true" dh="true">NEW KITCHEN ORDER&#10;</text>`;
+            xmlContent += `<text>------------------------------------------&#10;</text>`;
+            xmlContent += `<text align="left" dw="true" dh="true">Order #${order.id.slice(0, 6).toUpperCase()}</text>`;
+            if (order.tableNumber) {
+                xmlContent += `<text dw="true" dh="true"> (TABLE ${order.tableNumber})</text>`;
+            }
+            xmlContent += `<text>&#10;------------------------------------------&#10;</text>`;
+            
+            items.forEach((item: any) => {
+                xmlContent += `<text dw="true" dh="true">${item.quantity}x ${escapeXML(item.item.name)}&#10;</text>`;
+            });
+            
+            xmlContent += `<text>------------------------------------------&#10;</text>`;
+            xmlContent += `<text align="right">Total: CHF ${order.cartTotal.toFixed(2)}&#10;</text>`;
+            xmlContent += `<feed unit="30"/>`;
+            xmlContent += `<cut type="feed"/>`; // Full cut
+            xmlContent += `</epos-print>`;
+
+            const soapEnvelope = `<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/"><s:Body>${xmlContent}</s:Body></s:Envelope>`;
+            
+            const printRes = await fetch(`http://192.168.1.106/cgi-bin/epos/dispacher.cgi?devid=local_printer&timeout=5000`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'text/xml; charset=utf-8'
+                },
+                body: soapEnvelope
+            });
+
+            if (!printRes.ok) {
+                 console.error("Printer rejected the job:", printRes.statusText);
+                 alert("Kitchen Printer Error! Check printer power/paper.");
+            }
+        } catch (e) {
+            console.error("Print connection error:", e);
+            alert("Could not connect to Kitchen Printer at 192.168.1.106.\n\nIMPORTANT: Please ensure 'Insecure Content' is set to 'Allow' in your Chrome Site Settings for this to work over HTTPS.");
+        } finally {
+            if (onPrintDone) onPrintDone();
+        }
     };
 
     if (!isAuthed) {
@@ -461,25 +513,25 @@ export default function CounterDashboard() {
 
                         // Give print styling only to the active document being printed
                         return (
-                            <div key={order.id} className={`bg-white font-sans border-2 border-emerald-600/10 rounded-[2rem] p-5 lg:p-6 shadow-xl shadow-stone-900/5 flex flex-col transform transition-transform duration-300 hover:-translate-y-1 block relative overflow-hidden ${printingOrderId ? (isPrintingThis ? 'print:block print:shadow-none print:border-black print:text-black print:absolute print:inset-0 print:w-[3in] print:w-full' : 'print:hidden hidden') : ''}`}>
+                            <div key={order.id} className={`bg-white font-sans border-2 border-emerald-600/10 rounded-[2rem] p-5 lg:p-6 shadow-xl shadow-stone-900/5 flex flex-col transform transition-transform duration-300 hover:-translate-y-1 block relative ${printingOrderId ? (isPrintingThis ? 'print:block print:shadow-none print:border-black print:text-black print:absolute print:inset-0 print:w-[80mm] print:h-max print:overflow-visible print:p-2' : 'print:hidden hidden') : 'overflow-hidden'}`}>
                                 
                                 {/* Background glow accent */}
-                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none"></div>
+                                <div className="absolute -top-10 -right-10 w-32 h-32 bg-emerald-400/10 rounded-full blur-3xl pointer-events-none print:hidden"></div>
 
                                 {/* Custom Header */}
-                                <div className="flex justify-between items-start border-b border-stone-100 pb-4 print:border-black">
-                                    <div className="flex flex-col gap-2 relative z-10">
+                                <div className="flex justify-between items-start border-b border-stone-100 pb-4 print:pb-2 print:border-black print:border-b-2 print:mb-2">
+                                    <div className="flex flex-col gap-2 relative z-10 print:gap-1">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <span className={`${isCooking ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'} border shadow-sm font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-widest print:bg-transparent print:border-black`}>
+                                            <span className={`${isCooking ? 'bg-amber-100 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200'} border shadow-sm font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-widest print:bg-transparent print:border-0 print:text-black print:p-0 print:text-lg`}>
                                                 #{order.id.slice(0, 6).toUpperCase()} {isCooking && ' (COOKING)'}
                                             </span>
                                             {order.tableNumber && (
-                                                <span className="bg-blue-50 text-blue-800 border border-blue-200 shadow-sm font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-widest print:bg-transparent print:border-black">
+                                                <span className="bg-blue-50 text-blue-800 border border-blue-200 shadow-sm font-black text-xs px-2.5 py-1 rounded-lg uppercase tracking-widest print:bg-transparent print:border-0 print:text-black print:p-0 print:text-sm">
                                                     Table {order.tableNumber}
                                                 </span>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-1.5 text-stone-500 font-bold text-sm bg-stone-50 print:bg-transparent w-max px-2 py-1 rounded-md">
+                                        <div className="flex items-center gap-1.5 text-stone-500 font-bold text-sm bg-stone-50 print:bg-transparent print:font-black print:text-black print:p-0 w-max px-2 py-1 rounded-md">
                                             <Clock size={14} className="text-stone-400 print:hidden"/>
                                             {timeString}
                                         </div>
@@ -490,20 +542,20 @@ export default function CounterDashboard() {
                                 </div>
 
                                 {/* Items Container */}
-                                <div className="py-5 flex-grow flex flex-col gap-4 relative z-10">
+                                <div className="py-5 flex-grow flex flex-col gap-4 relative z-10 print:py-2 print:gap-2">
                                     {items.length === 0 && (
-                                        <div className="bg-red-50 rounded-xl p-4 text-center border-dashed border-2 border-red-200">
-                                            <p className="text-red-500 font-bold text-sm">All items removed</p>
+                                        <div className="bg-red-50 rounded-xl p-4 text-center border-dashed border-2 border-red-200 print:border-black print:text-black">
+                                            <p className="text-red-500 font-bold text-sm print:text-black">All items removed</p>
                                         </div>
                                     )}
                                     
                                     {items.map((cartItem, idx) => (
-                                        <div key={idx} className="flex justify-between items-start group">
-                                            <div className="flex gap-3.5 items-start flex-grow">
-                                                <div className="bg-stone-100 border border-stone-200 shadow-inner text-stone-600 font-black text-xs w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center shrink-0 print:border-black">
+                                        <div key={idx} className="flex justify-between items-start group print:border-b print:border-dotted print:border-black print:pb-2">
+                                            <div className="flex gap-3.5 items-start flex-grow print:gap-2">
+                                                <div className="bg-stone-100 border border-stone-200 shadow-inner text-stone-600 font-black text-xs w-7 h-7 md:w-8 md:h-8 rounded-full flex items-center justify-center shrink-0 print:border-black print:border-2 print:text-black print:bg-white print:shadow-none print:w-6 print:h-6 print:mt-1">
                                                     {cartItem.quantity}
                                                 </div>
-                                                <span className="font-bold text-gray-900 text-base md:text-lg leading-tight mt-0.5 print:text-black">
+                                                <span className="font-bold text-gray-900 text-base md:text-lg leading-tight mt-0.5 print:text-black print:text-sm print:leading-snug">
                                                     {cartItem.item.name}
                                                 </span>
                                             </div>
@@ -521,10 +573,10 @@ export default function CounterDashboard() {
                                 </div>
 
                                 {/* Total and Actions */}
-                                <div className="mt-auto flex flex-col border-t border-stone-100 pt-5 print:border-black relative z-10">
-                                    <div className="flex justify-between items-center mb-5">
-                                        <span className="text-stone-400 print:text-black font-bold uppercase tracking-widest text-xs">Total Amount</span>
-                                        <span className={`text-2xl md:text-3xl font-black ${items.length === 0 ? 'text-stone-300 line-through' : 'text-amber-600 print:text-black'}`}>
+                                <div className="mt-auto flex flex-col border-t border-stone-100 pt-5 print:border-black print:border-t-2 print:pt-2 relative z-10">
+                                    <div className="flex justify-between items-center mb-5 print:mb-2">
+                                        <span className="text-stone-400 print:text-black font-black uppercase tracking-widest text-xs print:text-[10px]">Total Amount</span>
+                                        <span className={`text-2xl md:text-3xl font-black ${items.length === 0 ? 'text-stone-300 line-through print:text-black' : 'text-amber-600 print:text-black print:text-xl'}`}>
                                             CHF {order.cartTotal.toFixed(2)}
                                         </span>
                                     </div>
