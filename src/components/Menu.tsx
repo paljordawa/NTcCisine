@@ -367,7 +367,10 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
                                                     {item.name}
                                                 </h3>
                                                 {item.description && (
-                                                    <p className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2">
+                                                    <p 
+                                                        style={{ fontFamily: 'var(--font-montserrat)' }}
+                                                        className="text-[8px] sm:text-[9px] md:text-[10px] lg:text-xs xl:text-sm text-stone-500 leading-tight mt-0.5 line-clamp-1 sm:line-clamp-2"
+                                                    >
                                                         {item.description}
                                                     </p>
                                                 )}
@@ -451,7 +454,12 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
                                                         : item.price}
                                                 </span>
                                             </div>
-                                            <p className="text-stone-500 font-medium text-[11px] md:text-xs lg:text-sm xl:text-base leading-relaxed mb-3 line-clamp-2 md:line-clamp-3">{item.description}</p>
+                                            <p 
+                                                style={{ fontFamily: 'var(--font-montserrat)' }}
+                                                className="text-stone-500 font-medium text-[11px] md:text-xs lg:text-sm xl:text-base leading-relaxed mb-3 line-clamp-2 md:line-clamp-3"
+                                            >
+                                                {item.description}
+                                            </p>
 
                                             {item.variants && item.variants.length > 1 && (
                                                 <div className="mb-3 w-full relative mt-1">
@@ -534,7 +542,12 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
                         <div className="p-5 sm:p-7 overflow-y-auto flex flex-col hide-scrollbar">
                             <h2 className="text-2xl sm:text-3xl font-black text-gray-900 leading-tight mb-3 tracking-tight">{selectedItem.name}</h2>
                             {selectedItem.description && (
-                                <p className="text-xs sm:text-sm text-stone-500 mb-6 leading-relaxed font-medium">{selectedItem.description}</p>
+                                <p 
+                                    style={{ fontFamily: 'var(--font-montserrat)' }}
+                                    className="text-xs sm:text-sm text-stone-500 mb-6 leading-relaxed font-medium"
+                                >
+                                    {selectedItem.description}
+                                </p>
                             )}
 
                             {/* Variant Configuration */}
