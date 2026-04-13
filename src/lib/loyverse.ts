@@ -1,6 +1,53 @@
 import type { MainCategory, SubCategory, MenuItem } from '../data/menu';
 import { LOYVERSE_ACCESS_TOKEN } from 'astro:env/server';
 
+function decodeHTMLEntities(text: string): string {
+  if (!text) return '';
+  const entities: Record<string, string> = {
+    'nbsp': ' ',
+    'amp': '&',
+    'quot': '"',
+    'lt': '<',
+    'gt': '>',
+    'apos': "'",
+    'eacute': 'é',
+    'Eacute': 'É',
+    'egrave': 'è',
+    'Egrave': 'È',
+    'agrave': 'à',
+    'Agrave': 'À',
+    'icirc': 'î',
+    'Icirc': 'Î',
+    'ocirc': 'ô',
+    'Ocirc': 'Ô',
+    'ucirc': 'û',
+    'Ucirc': 'Û',
+    'euml': 'ë',
+    'Euml': 'Ë',
+    'iuml': 'ï',
+    'Iuml': 'Ï',
+    'uuml': 'ü',
+    'Uuml': 'Ü',
+    'ccedil': 'ç',
+    'Ccedil': 'Ç',
+    'rsquo': "'",
+    'lsquo': "'",
+    'rdquo': '"',
+    'ldquo': '"',
+    'oelig': 'œ',
+    'OElig': 'Œ'
+  };
+  return text.replace(/&(#?[a-z0-9]+);/gi, (match, entity) => {
+    if (entity.startsWith('#')) {
+      const code = entity.startsWith('#x')
+        ? parseInt(entity.slice(2), 16)
+        : parseInt(entity.slice(1), 10);
+      return isNaN(code) ? match : String.fromCharCode(code);
+    }
+    return entities[entity.toLowerCase()] || match;
+  });
+}
+
 export async function fetchMenuData(): Promise<MainCategory[]> {
   const token = LOYVERSE_ACCESS_TOKEN;
   if (!token) {
@@ -44,7 +91,8 @@ export async function fetchMenuData(): Promise<MainCategory[]> {
       if (rawItems.length === 0) continue; // Skip empty categories
 
       // Parse Category Name (e.g., "Deserts / Classiques")
-      const nameParts = category.name.split('/').map((p: string) => p.trim());
+      const decodedCatName = decodeHTMLEntities(category.name);
+      const nameParts = decodedCatName.split('/').map((p: string) => p.trim());
       const mainName = nameParts[0] || 'Other';
       const subName = nameParts.length > 1 ? nameParts[1] : mainName;
 
@@ -69,18 +117,20 @@ export async function fetchMenuData(): Promise<MainCategory[]> {
           const priceVal = v.default_price ?? v.stores?.[0]?.price ?? 0;
           return {
             variant_id: v.variant_id || item.id,
-            name,
+            name: decodeHTMLEntities(name),
             price: `CHF ${Number(priceVal).toFixed(2)}`
           };
         });
 
         const displayPrice = variants.length > 0 ? variants[0].price : "CHF 0.00";
 
+        const cleanDescription = (item.description || '').replace(/#[\w]+/g, '').replace(/<[^>]*>?/gm, '').trim();
+
         return {
           id: item.id, // React key
           item_id: item.id,
-          name: item.item_name,
-          description: (item.description || '').replace(/#[\w]+/g, '').replace(/<[^>]*>?/gm, '').trim(),
+          name: decodeHTMLEntities(item.item_name),
+          description: decodeHTMLEntities(cleanDescription),
           price: displayPrice,
           image: item.image_url || 'https://placehold.co/400x300?text=' + encodeURIComponent(item.item_name),
           tags: (item.description || '').match(/#[\w]+/g)?.map((t: string) => t.substring(1)) || [],
@@ -104,3 +154,4 @@ export async function fetchMenuData(): Promise<MainCategory[]> {
     return [];
   }
 }
+

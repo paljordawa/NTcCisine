@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal, Search } from 'lucide-react';
+import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal, Search, MessageSquare, PieChart } from 'lucide-react';
 ---
 
 <Layout title="System Documentation - Nomade Cuisine">
@@ -50,28 +50,36 @@ import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal,
                         <div class="w-10 h-10 bg-blue-50 rounded-xl flex items-center justify-center border border-blue-100">
                             <AlertCircle size={20} className="text-blue-600" />
                         </div>
-                        <h2 class="text-2xl font-black text-gray-900">2. Store Status Toggles</h2>
+                        <h2 class="text-2xl font-black text-gray-900">2. Dashboard Core Toggles</h2>
                     </div>
                     <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
                         <p class="text-stone-600 font-medium leading-relaxed">
-                            Through the Settings ⚙️ icon on the top right of the Counter Dashboard, a Manager can independently toggle whether the store is accepting digital orders or not.
+                            Through the Settings ⚙️ icon on the top right of the Counter Dashboard, a Manager can independently control all public-facing features of the digital menu.
                         </p>
                         
-                        <div class="grid sm:grid-cols-2 gap-4">
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                             <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-5">
-                                <h3 class="flex items-center gap-2 font-black text-emerald-800 text-lg mb-2">
-                                    <Check size={18} strokeWidth={3} /> Online Orders Live
+                                <h3 class="flex items-center gap-2 font-black text-emerald-800 text-sm mb-2">
+                                    <Check size={16} strokeWidth={3} /> Ordering
                                 </h3>
-                                <p class="text-sm text-emerald-700/80 font-medium leading-relaxed">
-                                    Customers scanning the QR menus at their tables can actively browse the menu, add items to their cart, and submit them directly to the counter for fulfillment.
+                                <p class="text-[11px] text-emerald-700/80 font-medium leading-relaxed">
+                                    Master switch for table orders. When disabled, customers are notified that ordering is currently paused.
                                 </p>
                             </div>
-                            <div class="bg-red-50/50 border border-red-100 rounded-2xl p-5">
-                                <h3 class="flex items-center gap-2 font-black text-red-800 text-lg mb-2">
-                                    <X size={18} strokeWidth={3} /> Ordering Is Paused
+                            <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-5">
+                                <h3 class="flex items-center gap-2 font-black text-amber-800 text-sm mb-2">
+                                    <PieChart size={16} strokeWidth={3} /> Live Polls
                                 </h3>
-                                <p class="text-sm text-red-700/80 font-medium leading-relaxed">
-                                    Customers can still look at the menu, but placing orders is blocked. An "Ordering is currently paused" popup is displayed to them. Excellent for rush hours.
+                                <p class="text-[11px] text-amber-700/80 font-medium leading-relaxed">
+                                    Control whether the active poll popup is visible to guests upon entering the digital menu.
+                                </p>
+                            </div>
+                            <div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-5">
+                                <h3 class="flex items-center gap-2 font-black text-indigo-800 text-sm mb-2">
+                                    <MessageSquare size={16} strokeWidth={3} /> Feedback
+                                </h3>
+                                <p class="text-[11px] text-indigo-700/80 font-medium leading-relaxed">
+                                    Shows/Hides the "Rate Us" feedback engagement button in the customer menu header.
                                 </p>
                             </div>
                         </div>
@@ -97,22 +105,21 @@ import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal,
                         <div class="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-200">
                             <div class="p-6">
                                 <h3 class="text-lg font-black text-gray-900 mb-3">How The System Works</h3>
-                                <p class="text-stone-600 font-medium leading-relaxed text-sm">
-                                    When a customer clicks <strong>"Send to Counter"</strong>, the website will prompt them to enter a 4-digit code. If they do not enter the correct code, the order is instantly rejected by the server. 
-                                    By writing this code on a physical chalkboard or on your printed menus, you create an "analog geofence" that only physical guests can cross.
+                                <p class="text-stone-600 font-medium leading-relaxed text-sm font-bold">
+                                    When a customer clicks "Send to Counter", they must enter the current 4-digit code.
+                                </p>
+                                <p class="text-stone-500 font-medium leading-relaxed text-xs mt-2">
+                                    By displaying this code only on physical signage (chalkboards or printed menus), you guarantee that only guests in the building can successfully cross the order threshold.
                                 </p>
                             </div>
                             <div class="p-6 bg-white border-l-4 border-indigo-500">
-                                <h3 class="text-lg font-black text-indigo-900 mb-2">Changing the PIN</h3>
+                                <h3 class="text-lg font-black text-indigo-900 mb-2">Updating the PIN</h3>
                                 <p class="text-stone-600 font-medium leading-relaxed text-sm mb-4">
-                                    You can change the PIN at any time via the <strong>Settings ⚙️ Drawer</strong> on the Counter Dashboard:
+                                    You can dynamically change this PIN at any time via the <strong>Settings Drawer</strong> in the Counter Dashboard. Changes are saved instantly to the secure database.
                                 </p>
-                                <ul class="text-sm font-medium text-stone-600 list-disc pl-4 space-y-2">
-                                    <li>Enter a new 4-digit number in the <strong>"Customer Order PIN"</strong> box.</li>
-                                    <li>Click <strong>Update</strong> to save the changes.</li>
-                                    <li>Update your physical signage (blackboard/menus) so your customers know the new code.</li>
-                                    <li><strong>Recommendation:</strong> Change this code every morning to prevent old customers from ordering from home.</li>
-                                </ul>
+                                <div class="bg-stone-50 p-3 rounded-lg border border-stone-100 text-[10px] uppercase font-black tracking-widest text-indigo-600">
+                                    Recommendation: Update PIN every morning to keep the geofence fresh.
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -127,81 +134,88 @@ import { BookOpen, AlertCircle, Printer, X, Check, Lock, ChevronRight, Terminal,
                         <div class="w-10 h-10 bg-purple-50 rounded-xl flex items-center justify-center border border-purple-100">
                             <Printer size={20} className="text-purple-600" />
                         </div>
-                        <h2 class="text-2xl font-black text-gray-900">4. Kitchen Printer Configurations</h2>
+                        <h2 class="text-2xl font-black text-gray-900">4. Kitchen Printer Configuration</h2>
                     </div>
                     <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
                         <p class="text-stone-600 font-medium leading-relaxed">
-                            The dashboard features an integrated bypass for Google Chrome's usual Print Dialog box, communicating directly with the **Epson TM-m30III** Thermal POS over your local network. There are two "Routing" modes to accommodate browser security standards:
+                            The dashboard communicates directly with the **Epson TM-m30III** over the local network via ePOS-Print XML. There are two primary connection modes:
                         </p>
                         
                         <div class="bg-stone-50 border border-stone-200 rounded-2xl overflow-hidden divide-y divide-stone-200">
                             <div class="p-6">
                                 <h3 class="text-lg font-black text-gray-900 mb-3">Mode 1: Direct IP Fetch</h3>
-                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
-                                    <strong>How it works:</strong> The dashboard attempts to silently send data directly from your web browser to the printer's local IPv4 Address (e.g. <code class="bg-white font-bold px-1 py-0.5 rounded border border-stone-100 text-purple-600 tracking-tighter">http://192.168.1.106</code>).
+                                <p class="text-stone-600 font-medium leading-relaxed mb-1 text-sm">
+                                    Data is sent directly from the tablet's browser to the printer's IP.
                                 </p>
-                                <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
-                                    <strong>The Catch:</strong> Because your live dashboard is hosted securely on the public internet (using <code>HTTPS://</code>), but your local printer only understands insecure network connections (<code>HTTP://</code>), Google Chrome automatically blocks the connection. This is called the <strong>Mixed Content Rule</strong>.
+                                <p class="text-xs text-amber-600 font-bold mb-4 italic">
+                                    (Requires enabling "Insecure Content" in Chrome Site Settings for this domain).
                                 </p>
-                                <div class="bg-white border-l-4 border-amber-400 p-4 rounded-r-xl">
-                                    <h4 class="font-bold text-amber-800 text-sm mb-2 flex items-center gap-2">
-                                        <AlertCircle size={16} /> Chrome Settings Override (Mandatory)
-                                    </h4>
-                                    <ol class="text-sm font-medium text-stone-600 list-decimal pl-4 space-y-1">
-                                        <li>Open Google Chrome on your Counter PC / Tablet.</li>
-                                        <li>Click the <strong>Padlock / Settings Icon</strong> inside the URL bar right next to the site address.</li>
-                                        <li>Click on <strong>Site settings</strong>.</li>
-                                        <li>Scroll down, look for <strong>Insecure Content</strong>, and change it globally from <em class="text-red-500">Block</em> to <strong class="text-emerald-600 border-b border-emerald-200">Allow</strong>.</li>
-                                    </ol>
-                                </div>
                             </div>
 
                             <div class="p-6 bg-white">
-                                <h3 class="text-lg font-black text-gray-900 mb-3 text-emerald-700">Mode 2: Local Proxy Tool (Recommended)</h3>
+                                <h3 class="text-lg font-black text-emerald-800 mb-3 flex items-center gap-2">
+                                    <Terminal size={20} /> Mode 2: Local Proxy Bridge
+                                </h3>
                                 <p class="text-stone-600 font-medium leading-relaxed mb-4 text-sm">
-                                    <strong>How it works:</strong> This mode uses a tiny "invisible helper" script running on your counter computer to bridge the gap between building on the web and printing locally.
+                                    This bridge securely tunnels data through <code>localhost</code> to bypass standard browser security rules.
                                 </p>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-                                    <div class="space-y-3">
-                                        <h4 class="font-bold text-stone-700 text-sm">1. The Security Hurdle</h4>
-                                        <p class="text-xs text-stone-500 leading-relaxed">
-                                            Modern browsers block "Mixed Content"—they won't let a secure website (HTTPS) talk to an insecure local device (HTTP). This usually blocks direct printing.
-                                        </p>
-                                    </div>
-                                    <div class="space-y-3">
-                                        <h4 class="font-bold text-stone-700 text-sm">2. The "Localhost" Bypass</h4>
-                                        <p class="text-xs text-stone-500 leading-relaxed">
-                                            Browsers treat <code class="bg-stone-50 px-1 border border-stone-100 rounded">localhost</code> as a trusted zone. By running a local script, the dashboard can securely "hand over" the print data to your computer, which then delivers it to the printer.
-                                        </p>
-                                    </div>
-                                </div>
-                                <div class="bg-indigo-50 border-l-4 border-indigo-500 p-4 rounded-r-xl">
-                                    <h4 class="font-bold text-indigo-900 text-sm mb-2 flex items-center gap-2">
-                                        <Terminal size={16} /> How to Start the Proxy
-                                    </h4>
-                                    <p class="text-xs text-indigo-700 mb-3">Execute these commands in your terminal on the counter computer:</p>
-                                    <pre class="bg-stone-900 text-stone-300 p-3 rounded-lg text-[11px] font-mono leading-relaxed overflow-x-auto">
-cd printer-proxy
-npm install
-node index.js</pre>
-                                    <p class="text-xs text-indigo-700 mt-3 font-medium italic">
-                                        Once the terminal says "Proxy Server ACTIVE", toggle the dashboard settings to "Local Proxy".
-                                    </p>
-                                </div>
-
-                                <div class="mt-4 p-4 bg-emerald-50 border-2 border-emerald-100 rounded-xl flex items-start gap-4">
-                                    <div class="bg-emerald-500 p-2 rounded-lg text-white shadow-sm">
+                                
+                                <div class="bg-emerald-50 border-2 border-emerald-100 p-4 rounded-xl flex items-center gap-4">
+                                    <div class="bg-emerald-500 p-2 rounded-lg text-white">
                                         <Search size={18} />
                                     </div>
                                     <div>
-                                        <h4 class="font-bold text-emerald-900 text-sm mb-1 uppercase tracking-tight">One-Click Auto Scan</h4>
-                                        <p class="text-xs text-emerald-700 leading-relaxed font-medium">
-                                            Don't know your printer's IP? No problem. Once the proxy is running, click the **"Scan Network"** button in your settings. The system will automatically probe your entire Wi-Fi subnet and find the printer for you in seconds.
+                                        <h4 class="font-black text-emerald-900 text-xs mb-1 uppercase tracking-widest">Auto Printer Discovery</h4>
+                                        <p class="text-[11px] text-emerald-800/80 font-medium leading-relaxed leading-tight">
+                                            If the Proxy is running, use <strong>"Scan Network"</strong> in the settings to automatically find and connect to your Epson printer's IP address.
                                         </p>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                {/* Community Engagement */}
+                <section class="bg-white rounded-[2rem] p-8 sm:p-10 border border-stone-200 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative overflow-hidden">
+                    <div class="absolute top-0 right-0 p-8 opacity-5">
+                        <MessageSquare size={120} />
+                    </div>
+                    <div class="flex items-center gap-3 mb-6 relative z-10">
+                        <div class="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center border border-amber-100">
+                            <PieChart size={20} className="text-amber-600" />
+                        </div>
+                        <h2 class="text-2xl font-black text-gray-900">5. Community Engagement</h2>
+                    </div>
+                    <div class="prose prose-stone prose-emerald max-w-none relative z-10 space-y-6">
+                        <p class="text-stone-600 font-medium leading-relaxed">
+                            The Nomade platform includes tools to drive engagement and gather valuable data directly from your guests.
+                        </p>
+                        
+                        <div class="grid sm:grid-cols-2 gap-6 font-medium">
+                            <div class="bg-amber-50/50 border border-amber-100 rounded-2xl p-6">
+                                <h3 class="text-lg font-black text-amber-900 mb-2">Live Guest Polls</h3>
+                                <p class="text-[13px] text-amber-800/80 leading-relaxed mb-4">
+                                    Launch interactive polls. Results are tracked in real-time on the Dashboard and can be exported as **CSV spreadsheets** for business review.
+                                </p>
+                                <div class="bg-white border border-amber-200/50 rounded-xl p-3 text-[10px] uppercase font-black text-amber-600 tracking-widest text-center shadow-sm">
+                                    Best for: Testing new menu specials
+                                </div>
+                            </div>
+                            
+                            <div class="bg-emerald-50/50 border border-emerald-100 rounded-2xl p-6">
+                                <h3 class="text-lg font-black text-emerald-900 mb-2 text-emerald-800">Feedback Feed</h3>
+                                <p class="text-[13px] text-emerald-800/80 leading-relaxed mb-4">
+                                    An internal guest-opinion channel where diners can leave star ratings and private comments for management to review in real-time.
+                                </p>
+                                <div class="bg-white border border-emerald-200/50 rounded-xl p-3 text-[10px] uppercase font-black text-emerald-600 tracking-widest text-center shadow-sm">
+                                    Privacy Built-in: Staff-only access
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
                         <div class="mt-6 bg-white border border-stone-100 rounded-2xl p-6 shadow-sm">
                             <h3 class="text-sm font-black text-stone-900 uppercase tracking-widest mb-4 flex items-center gap-2">
                                 <span class="w-2 h-2 bg-amber-500 rounded-full"></span> Finding Your Printer Device ID

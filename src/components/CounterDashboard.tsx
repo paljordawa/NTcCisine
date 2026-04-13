@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound, Printer, Settings, BookOpen } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, Trash2, Lock, KeyRound, Printer, Settings, BookOpen, MessageSquare, PieChart, Send, Star, RefreshCw } from 'lucide-react';
 
 const LiveTimer = ({ createdAt }: { createdAt: string }) => {
     const [elapsed, setElapsed] = useState('');
@@ -49,6 +49,14 @@ interface Order {
     tableNumber?: string | null;
 }
 
+interface Feedback {
+    id: number;
+    content: string;
+    rating: number;
+    createdAt: string;
+    tableNumber?: string | null;
+}
+
 export default function CounterDashboard() {
     const [isAuthed, setIsAuthed] = useState(false);
     const [pinCode, setPinCode] = useState('');
@@ -56,11 +64,20 @@ export default function CounterDashboard() {
 
     const [orders, setOrders] = useState<Order[]>([]);
     const [history, setHistory] = useState<Order[]>([]);
-    const [activeTab, setActiveTab] = useState<'live' | 'history'>('live');
+    const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+    const [activeTab, setActiveTab] = useState<'live' | 'history' | 'community'>('live');
+    const [activePoll, setActivePoll] = useState<any>(null);
+    const [pollResults, setPollResults] = useState<any>(null);
+    const [pollTotalVotes, setPollTotalVotes] = useState(0);
+    const [newPollQuestion, setNewPollQuestion] = useState('');
+    const [newPollOptions, setNewPollOptions] = useState(['', '']);
+    const [isUpdatingPoll, setIsUpdatingPoll] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [printingOrderId, setPrintingOrderId] = useState<string | null>(null);
     const [isPaused, setIsPaused] = useState<boolean>(false);
+    const [isPollEnabled, setIsPollEnabled] = useState<boolean>(true);
+    const [isFeedbackEnabled, setIsFeedbackEnabled] = useState<boolean>(true);
     const [printerMode, setPrinterMode] = useState<'direct' | 'proxy'>('direct');
     const [printerIp, setPrinterIp] = useState('192.168.1.106');
     const [printerId, setPrinterId] = useState('local_printer');
@@ -183,12 +200,61 @@ export default function CounterDashboard() {
         }
     };
 
+    const fetchFeedbacks = async () => {
+        try {
+            const res = await fetch('/api/feedback');
+            if (res.ok) {
+                const data = await res.json();
+                setFeedbacks(data.feedbacks);
+            }
+        } catch (e) {}
+    };
+
+    const fetchPollData = async () => {
+        try {
+            const res = await fetch('/api/polls');
+            if (res.ok) {
+                const data = await res.json();
+                setActivePoll(data.poll);
+                setPollResults(data.results);
+                setPollTotalVotes(data.totalVotes);
+            }
+        } catch (e) {}
+    };
+
+    const handleCreatePoll = async () => {
+        if (!newPollQuestion || newPollOptions.some(o => !o) || isUpdatingPoll) return;
+        setIsUpdatingPoll(true);
+        try {
+            const res = await fetch('/api/polls', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    question: newPollQuestion,
+                    options: newPollOptions
+                })
+            });
+            if (res.ok) {
+                setNewPollQuestion('');
+                setNewPollOptions(['', '']);
+                fetchPollData();
+                alert('Poll updated successfully!');
+            }
+        } catch (e) {
+            alert('Failed to update poll');
+        } finally {
+            setIsUpdatingPoll(false);
+        }
+    };
+
     const fetchSettings = async () => {
         try {
             const res = await fetch('/api/settings');
             if (res.ok) {
                 const data = await res.json();
                 setIsPaused(data.isOrderingPaused);
+                setIsPollEnabled(data.isPollEnabled);
+                setIsFeedbackEnabled(data.isFeedbackEnabled);
                 setStorePin(data.storePin || '0000');
                 setPinInput(data.storePin || '0000');
             }
@@ -227,13 +293,82 @@ export default function CounterDashboard() {
         }
     };
 
+    const togglePollSetting = async () => {
+        const newState = !isPollEnabled;
+        setIsPollEnabled(newState);
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isPollEnabled: newState })
+            });
+        } catch(e) {
+            setIsPollEnabled(!newState);
+        }
+    };
+
+    const toggleFeedbackSetting = async () => {
+        const newState = !isFeedbackEnabled;
+        setIsFeedbackEnabled(newState);
+        try {
+            await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isFeedbackEnabled: newState })
+            });
+        } catch(e) {
+            setIsFeedbackEnabled(!newState);
+        }
+    };
+
+    const handleClearPoll = async () => {
+        if (!confirm('Are you sure you want to end and archive the current poll? It will be removed from the customer menu.')) return;
+        try {
+            const res = await fetch('/api/polls', { method: 'DELETE' });
+            if (res.ok) {
+                fetchPollData();
+                alert('Poll ended successfully.');
+            }
+        } catch (e) {
+            alert('Failed to clear poll');
+        }
+    };
+
+    const exportPollToCSV = () => {
+        if (!activePoll || !pollResults) return;
+        
+        let csvContent = "data:text/csv;charset=utf-8,";
+        csvContent += `Question,"${activePoll.question}"\n`;
+        csvContent += `Total Votes,${pollTotalVotes}\n\n`;
+        csvContent += "Option,Votes,Percentage\n";
+        
+        activePoll.options.forEach((opt: string, idx: number) => {
+            const res = pollResults.find((r: any) => r.optionIndex === idx);
+            const count = res?.count || 0;
+            const pct = pollTotalVotes > 0 ? Math.round((count / pollTotalVotes) * 100) : 0;
+            csvContent += `"${opt}",${count},${pct}%\n`;
+        });
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `poll_results_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     // Poll every 5 seconds
     useEffect(() => {
         fetchOrders();
         fetchSettings();
+        fetchFeedbacks();
+        fetchPollData();
         const interval = setInterval(() => {
             fetchOrders();
             fetchSettings();
+            fetchFeedbacks();
+            fetchPollData();
         }, 5000);
         return () => clearInterval(interval);
     }, []);
@@ -450,6 +585,13 @@ export default function CounterDashboard() {
                     >
                         History
                     </button>
+                    <button
+                        onClick={() => setActiveTab('community')}
+                        className={`px-6 py-2 rounded-md font-bold transition-all flex items-center gap-2 ${activeTab === 'community' ? 'bg-white text-gray-900 shadow-sm border border-stone-200' : 'text-stone-500 hover:text-gray-900'}`}
+                    >
+                        Community
+                        {feedbacks.length > 0 && <span className="bg-emerald-100 text-emerald-700 text-[10px] px-1.5 py-0.5 rounded-full">New</span>}
+                    </button>
                 </div>
 
                 <div className="flex items-center gap-4">
@@ -547,11 +689,187 @@ export default function CounterDashboard() {
                 </div>
             )}
 
-            {activeTab === 'live' && orders.length === 0 && (
-                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-2xl border-2 border-emerald-100 border-dashed shadow-sm">
-                    <Clock size={64} className="text-emerald-200 mb-4" />
-                    <p className="text-2xl text-emerald-900 font-bold">No pending orders</p>
-                    <p className="text-emerald-800/60 mt-2 font-medium">New web orders will appear here automatically.</p>
+            {activeTab === 'community' && (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 print:hidden">
+                    {/* Feedback Feed */}
+                    <div className="flex flex-col gap-6">
+                        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm">
+                            <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                                <MessageSquare className="text-emerald-600" />
+                                Customer Feedback
+                            </h3>
+                            
+                            <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                {feedbacks.length === 0 ? (
+                                    <div className="text-center py-12 text-stone-400 font-medium">No feedback received yet.</div>
+                                ) : (
+                                    feedbacks.map((f) => (
+                                        <div key={f.id} className="bg-stone-50 border border-stone-100 rounded-2xl p-4 transition-all hover:border-emerald-200 hover:bg-white hover:shadow-md">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div className="flex gap-1">
+                                                    {[1, 2, 3, 4, 5].map(star => (
+                                                        <Star 
+                                                            key={star} 
+                                                            size={14} 
+                                                            className={`${f.rating >= star ? 'fill-amber-500 text-amber-500' : 'text-stone-200'}`} 
+                                                        />
+                                                    ))}
+                                                </div>
+                                                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">
+                                                    {new Date(f.createdAt).toLocaleDateString()}
+                                                </span>
+                                            </div>
+                                            <p className="text-sm text-stone-700 font-medium leading-relaxed mb-3">"{f.content}"</p>
+                                            <div className="flex items-center gap-2">
+                                                {f.tableNumber && (
+                                                    <span className="text-[9px] font-black bg-emerald-100 text-emerald-700 px-2 py-0.5 rounded-full uppercase tracking-widest border border-emerald-200">
+                                                        Table {f.tableNumber}
+                                                    </span>
+                                                )}
+                                                <span className="text-[9px] font-black bg-stone-200 text-stone-500 px-2 py-0.5 rounded-full uppercase tracking-widest">
+                                                    Customer
+                                                </span>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Poll Management */}
+                    <div className="flex flex-col gap-6">
+                        <div className="bg-white rounded-3xl p-6 border border-stone-200 shadow-sm">
+                            <h3 className="text-xl font-black text-gray-900 mb-6 flex items-center gap-2">
+                                <PieChart className="text-amber-600" />
+                                Live Poll Manager
+                            </h3>
+
+                            {/* Current Results */}
+                            {activePoll ? (
+                                <div className="mb-10 bg-amber-50 rounded-2xl p-6 border border-amber-100">
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div>
+                                            <h4 className="text-sm font-black text-amber-900 uppercase tracking-widest mb-1 opacity-60">Currently Asking</h4>
+                                            <p className="text-lg font-black text-gray-900">{activePoll.question}</p>
+                                        </div>
+                                        <div className="text-right">
+                                            <span className="text-2xl font-black text-amber-600">{pollTotalVotes}</span>
+                                            <p className="text-[10px] font-bold text-stone-400 uppercase tracking-widest">Votes</p>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {Array.isArray(activePoll.options) && activePoll.options.map((option: string, index: number) => {
+                                            const result = pollResults?.find((r: any) => r.optionIndex === index);
+                                            const percentage = pollTotalVotes > 0 ? Math.round((result?.count || 0) / pollTotalVotes * 100) : 0;
+                                            return (
+                                                <div key={index} className="space-y-1">
+                                                    <div className="flex justify-between text-xs font-bold text-stone-600">
+                                                        <span>{option}</span>
+                                                        <span className="text-amber-700">{result?.count || 0} ({percentage}%)</span>
+                                                    </div>
+                                                    <div className="w-full h-2 bg-stone-200 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-amber-500 rounded-full transition-all duration-1000" 
+                                                            style={{ width: `${percentage}%` }}
+                                                        ></div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                    
+                                    <div className="flex gap-4 mt-6 pt-6 border-t border-amber-200/50">
+                                        <button 
+                                            onClick={() => fetchPollData()}
+                                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:text-amber-800 transition-colors"
+                                        >
+                                            <RefreshCw size={12} /> Refresh
+                                        </button>
+                                        <button 
+                                            onClick={exportPollToCSV}
+                                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-800 transition-colors"
+                                        >
+                                            <Printer size={12} /> Export CSV
+                                        </button>
+                                        <button 
+                                            onClick={handleClearPoll}
+                                            className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-red-500 hover:text-red-700 transition-colors ml-auto"
+                                        >
+                                            <Trash2 size={12} /> Clear/End Poll
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="mb-10 p-8 bg-stone-50 rounded-2xl border border-stone-100 text-center">
+                                    <p className="text-stone-500 font-bold italic">No active poll. Create one below to engage your guests!</p>
+                                </div>
+                            )}
+
+                            {/* Create/Replace Poll Form */}
+                            <div className="bg-stone-50 rounded-2xl p-6 border border-stone-100">
+                                <h4 className="text-sm font-black text-stone-500 uppercase tracking-widest mb-4">Launch New Poll</h4>
+                                
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">The Question</label>
+                                        <input 
+                                            type="text" 
+                                            value={newPollQuestion}
+                                            onChange={(e) => setNewPollQuestion(e.target.value)}
+                                            placeholder="e.g. Which Momo should be our next special?"
+                                            className="w-full bg-white border border-stone-200 rounded-xl px-4 py-3 text-sm font-bold text-gray-900 focus:border-amber-500 focus:ring-4 focus:ring-amber-500/10 outline-none transition-all placeholder:text-stone-400"
+                                        />
+                                    </div>
+
+                                    <div>
+                                        <label className="block text-[10px] font-black text-stone-400 uppercase tracking-widest mb-2">Options</label>
+                                        <div className="space-y-2">
+                                            {newPollOptions.map((opt, i) => (
+                                                <div key={i} className="flex gap-2">
+                                                    <input 
+                                                        type="text" 
+                                                        value={opt}
+                                                        onChange={(e) => {
+                                                            const next = [...newPollOptions];
+                                                            next[i] = e.target.value;
+                                                            setNewPollOptions(next);
+                                                        }}
+                                                        placeholder={`Option ${i+1}`}
+                                                        className="flex-grow bg-white border border-stone-200 rounded-xl px-4 py-2 text-sm font-medium text-gray-900 focus:border-emerald-500 outline-none placeholder:text-stone-400"
+                                                    />
+                                                    {i > 1 && (
+                                                        <button 
+                                                            onClick={() => setNewPollOptions(prev => prev.filter((_, idx) => idx !== i))}
+                                                            className="text-red-300 hover:text-red-500 transition-colors"
+                                                        >
+                                                            <Trash2 size={20} />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            ))}
+                                        </div>
+                                        <button 
+                                            onClick={() => setNewPollOptions(prev => [...prev, ''])}
+                                            className="mt-3 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-800"
+                                        >
+                                            + Add Another Option
+                                        </button>
+                                    </div>
+
+                                    <button 
+                                        onClick={handleCreatePoll}
+                                        disabled={!newPollQuestion || newPollOptions.some(o => !o) || isUpdatingPoll}
+                                        className="w-full bg-amber-600 hover:bg-stone-900 disabled:bg-stone-200 text-white font-black py-4 rounded-xl shadow-lg shadow-amber-600/20 transition-all flex items-center justify-center gap-2 mt-4"
+                                    >
+                                        {isUpdatingPoll ? <RefreshCw size={18} className="animate-spin" /> : <Send size={18} />}
+                                        LAUNCH POLL ON MENU
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
 
@@ -560,6 +878,14 @@ export default function CounterDashboard() {
                     <Check size={64} className="text-emerald-200 mb-4" />
                     <p className="text-2xl text-emerald-900 font-bold">No history</p>
                     <p className="text-emerald-800/60 mt-2 font-medium">Processed orders will appear here.</p>
+                </div>
+            )}
+
+            {activeTab === 'live' && orders.length === 0 && (
+                <div className="flex flex-col items-center justify-center py-32 bg-white rounded-2xl border-2 border-emerald-100 border-dashed shadow-sm">
+                    <Clock size={64} className="text-emerald-200 mb-4" />
+                    <p className="text-2xl text-emerald-900 font-bold">No pending orders</p>
+                    <p className="text-emerald-800/60 mt-2 font-medium">New web orders will appear here automatically.</p>
                 </div>
             )}
 
@@ -833,124 +1159,153 @@ export default function CounterDashboard() {
                                     {isPaused ? 'ORDERING IS PAUSED' : 'ONLINE ORDERS LIVE'}
                                 </button>
                                 
-                                <div className="border-t border-stone-100 pt-4 mt-2">
-                                    <div className="flex flex-col gap-2">
-                                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 flex items-center justify-between">
+                                </div>
+
+                                <div className="border-t border-stone-100 pt-6 mt-2 space-y-4">
+                                    <div className="bg-stone-50 rounded-xl p-4 border border-stone-100 mb-2">
+                                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 mb-2 flex items-center justify-between">
                                             <span>Customer Order PIN</span>
                                             <span className="text-emerald-500 flex items-center gap-1"><Check size={10}/> ACTIVE</span>
                                         </label>
-                                        <p className="text-[10px] text-stone-400 leading-relaxed pl-1 pb-1">
-                                            Customers must enter this 4-digit code to place an order. Change this daily for maximum security.
-                                        </p>
-                                        <div className="flex gap-2 relative">
+                                        <div className="flex gap-2">
                                             <input 
                                                 type="text" 
                                                 maxLength={4}
                                                 value={pinInput} 
                                                 onChange={(e) => setPinInput(e.target.value.replace(/[^0-9]/g, ''))}
-                                                className="w-full bg-stone-50 rounded-xl px-3 py-2 font-mono text-xl tracking-[0.5em] text-center transition-all focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-indigo-700 border border-indigo-200 shadow-inner"
+                                                className="w-full bg-white rounded-xl px-3 py-2 font-mono text-xl tracking-[0.5em] text-center transition-all focus:outline-none focus:ring-2 focus:ring-amber-500/50 text-stone-900 border border-stone-200"
                                                 placeholder="0000"
                                             />
                                             <button 
-                                                onClick={generateRandomPin}
-                                                className="absolute right-24 top-1/2 -translate-y-1/2 p-2 text-stone-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-all"
-                                                title="Generate Random PIN"
-                                            >
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
-                                            </button>
-                                            <button 
                                                 onClick={() => saveStorePin(pinInput)}
-                                                className="px-4 py-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 rounded-xl font-bold text-xs active:scale-95 transition-all outline-none whitespace-nowrap"
+                                                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl font-bold text-xs active:scale-95 transition-all outline-none whitespace-nowrap"
                                             >
                                                 {storePin === pinInput ? 'Saved' : 'Update'}
                                             </button>
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-                        </div>
 
-                        {/* Hardware Routing Card */}
-                        <div className="flex flex-col gap-3">
-                            <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest pl-1">Receipt Routing</h3>
-                            <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col gap-4">
-                                <p className="text-sm text-stone-500 font-medium leading-relaxed pl-1">
-                                    Configure how tickets are transmitted to the kitchen hardware when accepted.
-                                </p>
-                                <div className="grid grid-cols-2 gap-3">
-                                    <button
-                                        onClick={() => { setPrinterMode('direct'); localStorage.setItem('printerMode', 'direct'); }}
-                                        className={`flex flex-col items-center gap-2 p-4 rounded-[1rem] border-2 transition-all active:scale-95 ${printerMode === 'direct' ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200 hover:bg-stone-100 hover:text-stone-600'}`}
-                                    >
-                                        <Printer size={24} strokeWidth={2} className={`transition-colors ${printerMode === 'direct' ? 'text-amber-500' : 'text-stone-300'}`} />
-                                        <span className="text-xs font-black">Direct IP</span>
-                                    </button>
-                                    <button
-                                        onClick={() => { setPrinterMode('proxy'); localStorage.setItem('printerMode', 'proxy'); }}
-                                        className={`flex flex-col items-center gap-2 p-4 rounded-[1rem] border-2 transition-all active:scale-95 ${printerMode === 'proxy' ? 'border-emerald-500 bg-emerald-50 text-emerald-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200 hover:bg-stone-100 hover:text-stone-600'}`}
-                                    >
-                                        <Printer size={24} strokeWidth={2} className={`transition-colors ${printerMode === 'proxy' ? 'text-emerald-500' : 'text-stone-300'}`} />
-                                        <span className="text-xs font-black">Local Proxy</span>
-                                    </button>
-                                </div>
-                                <div className="flex flex-col gap-2 mt-2">
-                                    <div className="flex items-center justify-between pl-1">
-                                        <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest">IP Address</label>
+                                    <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest pl-1">Community Toggles</h3>
+                                    
+                                    <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-lg ${isPollEnabled ? 'bg-amber-100 text-amber-600' : 'bg-stone-200 text-stone-400'}`}>
+                                                <PieChart size={18} />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-black text-stone-700">Customer Polls</span>
+                                                <span className="text-[10px] text-stone-400 font-medium">{isPollEnabled ? 'Running' : 'Hidden'}</span>
+                                            </div>
+                                        </div>
                                         <button 
-                                            onClick={handleScan}
-                                            disabled={isScanning || printerMode !== 'proxy'}
-                                            className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded transition-all ${isScanning ? 'bg-amber-100 text-amber-600 animate-pulse' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 active:scale-95 disabled:opacity-30 disabled:grayscale'}`}
+                                            onClick={togglePollSetting}
+                                            className={`w-12 h-6 rounded-full transition-all relative ${isPollEnabled ? 'bg-amber-500' : 'bg-stone-300'}`}
                                         >
-                                            {isScanning ? 'Scanning...' : 'Scan Network'}
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isPollEnabled ? 'left-7' : 'left-1'}`}></div>
                                         </button>
                                     </div>
-                                    <input 
-                                        type="text" 
-                                        value={printerIp} 
-                                        onChange={(e) => updatePrinterIp(e.target.value)}
-                                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
-                                        placeholder="192.168.x.x"
-                                    />
-                                    
-                                    <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 mt-1">Epson Device ID</label>
-                                    <input 
-                                        type="text" 
-                                        value={printerId} 
-                                        onChange={(e) => updatePrinterId(e.target.value)}
-                                        className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-stone-700 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner"
-                                        placeholder="local_printer"
-                                    />
 
-                                    <button 
-                                        onClick={() => {
-                                            localStorage.setItem('printerIp', printerIp);
-                                            localStorage.setItem('printerId', printerId);
-                                            alert("Printer configuration saved locally!");
-                                        }}
-                                        className="mt-4 w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-stone-200 transition-all active:scale-95 flex items-center justify-center gap-2"
-                                    >
-                                        <Check size={14} strokeWidth={3} />
-                                        Save Changes
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Documentation Link */}
-                        <div className="flex flex-col gap-3">
-                            <a 
-                                href="/docs" 
-                                className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-stone-100/50 hover:bg-stone-100 border border-stone-200 rounded-[1rem] font-bold text-stone-600 hover:text-stone-800 transition-all active:scale-95 group shadow-sm"
-                                target="_blank"
-                                rel="noopener noreferrer"
-                            >
-                                <BookOpen size={18} className="text-emerald-600 group-hover:rotate-12 transition-transform" />
-                                Manager Documentation
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-}
+                                    <div className="flex items-center justify-between p-3 bg-stone-50 rounded-xl border border-stone-100">
+                                        <div className="flex items-center gap-3">
+                                            <div className={`p-2 rounded-lg ${isFeedbackEnabled ? 'bg-emerald-100 text-emerald-600' : 'bg-stone-200 text-stone-400'}`}>
+                                                <MessageSquare size={18} />
+                                            </div>
+                                            <div className="flex flex-col">
+                                                <span className="text-xs font-black text-stone-700">Guest Feedback</span>
+                                                <span className="text-[10px] text-stone-400 font-medium">{isFeedbackEnabled ? 'Active' : 'Hidden'}</span>
+                                            </div>
+                                        </div>
+                                        <button 
+                                            onClick={toggleFeedbackSetting}
+                                            className={`w-12 h-6 rounded-full transition-all relative ${isFeedbackEnabled ? 'bg-emerald-500' : 'bg-stone-300'}`}
+                                        >
+                                            <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${isFeedbackEnabled ? 'left-7' : 'left-1'}`}></div>
+                                        </button>
+                                     </div>
+                                 </div>
+                             </div>
+ 
+                         {/* Hardware Routing Card */}
+                         <div className="flex flex-col gap-3">
+                             <h3 className="text-xs font-black text-stone-400 uppercase tracking-widest pl-1">Receipt Routing</h3>
+                             <div className="bg-white rounded-2xl p-5 border border-stone-200 shadow-sm flex flex-col gap-4">
+                                 <p className="text-sm text-stone-500 font-medium leading-relaxed pl-1">
+                                     Configure how tickets are transmitted to the kitchen hardware when accepted.
+                                 </p>
+                                 <div className="grid grid-cols-2 gap-3">
+                                     <button
+                                         onClick={() => { setPrinterMode('direct'); localStorage.setItem('printerMode', 'direct'); }}
+                                         className={`flex flex-col items-center gap-2 p-4 rounded-[1rem] border-2 transition-all active:scale-95 ${printerMode === 'direct' ? 'border-amber-500 bg-amber-50 text-amber-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200 hover:bg-stone-100 hover:text-stone-600'}`}
+                                     >
+                                         <Printer size={24} strokeWidth={2} className={`transition-colors ${printerMode === 'direct' ? 'text-amber-500' : 'text-stone-300'}`} />
+                                         <span className="text-xs font-black">Direct IP</span>
+                                     </button>
+                                     <button
+                                         onClick={() => { setPrinterMode('proxy'); localStorage.setItem('printerMode', 'proxy'); }}
+                                         className={`flex flex-col items-center gap-2 p-4 rounded-[1rem] border-2 transition-all active:scale-95 ${printerMode === 'proxy' ? 'border-emerald-500 bg-emerald-50 text-emerald-900 shadow-inner' : 'border-stone-100 bg-stone-50 text-stone-400 hover:border-stone-200 hover:bg-stone-100 hover:text-stone-600'}`}
+                                     >
+                                         <Printer size={24} strokeWidth={2} className={`transition-colors ${printerMode === 'proxy' ? 'text-emerald-500' : 'text-stone-300'}`} />
+                                         <span className="text-xs font-black">Local Proxy</span>
+                                     </button>
+                                 </div>
+                                 <div className="flex flex-col gap-2 mt-2">
+                                     <div className="flex items-center justify-between pl-1">
+                                         <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest">IP Address</label>
+                                         <button 
+                                             onClick={handleScan}
+                                             disabled={isScanning || printerMode !== 'proxy'}
+                                             className={`text-[10px] font-black uppercase tracking-tighter px-2 py-0.5 rounded transition-all ${isScanning ? 'bg-amber-100 text-amber-600 animate-pulse' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100 active:scale-95 disabled:opacity-30 disabled:grayscale'}`}
+                                         >
+                                             {isScanning ? 'Scanning...' : 'Scan Network'}
+                                         </button>
+                                     </div>
+                                     <input 
+                                         type="text" 
+                                         value={printerIp} 
+                                         onChange={(e) => updatePrinterIp(e.target.value)}
+                                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner placeholder:text-stone-400"
+                                         placeholder="192.168.x.x"
+                                     />
+                                     
+                                     <label className="text-[10px] text-stone-500 font-bold uppercase tracking-widest pl-1 mt-1">Epson Device ID</label>
+                                     <input 
+                                         type="text" 
+                                         value={printerId} 
+                                         onChange={(e) => updatePrinterId(e.target.value)}
+                                         className="w-full bg-stone-50 border border-stone-200 rounded-xl px-4 py-2 font-mono text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 transition-all shadow-inner placeholder:text-stone-400"
+                                         placeholder="local_printer"
+                                     />
+ 
+                                     <button 
+                                         onClick={() => {
+                                             localStorage.setItem('printerIp', printerIp);
+                                             localStorage.setItem('printerId', printerId);
+                                             alert("Printer configuration saved locally!");
+                                         }}
+                                         className="mt-4 w-full py-3 bg-stone-900 hover:bg-black text-white rounded-xl font-bold text-xs uppercase tracking-widest shadow-lg shadow-stone-200 transition-all active:scale-95 flex items-center justify-center gap-2"
+                                     >
+                                         <Check size={14} strokeWidth={3} />
+                                         Save Changes
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+ 
+                         {/* Documentation Link */}
+                         <div className="flex flex-col gap-3">
+                             <a 
+                                 href="/docs" 
+                                 className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-stone-100/50 hover:bg-stone-100 border border-stone-200 rounded-[1rem] font-bold text-stone-600 hover:text-stone-800 transition-all active:scale-95 group shadow-sm"
+                                 target="_blank"
+                                 rel="noopener noreferrer"
+                             >
+                                 <BookOpen size={18} className="text-emerald-600 group-hover:rotate-12 transition-transform" />
+                                 Manager Documentation
+                             </a>
+                         </div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+     );
+ }

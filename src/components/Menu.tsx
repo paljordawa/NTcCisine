@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { type MainCategory, type SubCategory, type MenuItem } from '../data/menu';
-import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info, Flame } from 'lucide-react';
+import { ChevronRight, Star, LayoutGrid, List, ConciergeBell, X, Plus, Minus, Trash2, Info, Flame, MessageSquare, PieChart, Send, Camera, MapPin, ExternalLink } from 'lucide-react';
 
 interface CartItem {
     item: MenuItem;
@@ -27,14 +27,113 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
     const [tableNumber, setTableNumber] = useState<string | null>(null);
     const [showPinPrompt, setShowPinPrompt] = useState(false);
     const [customerPin, setCustomerPin] = useState('');
+    const [isFeedbackOpen, setIsFeedbackOpen] = useState(false);
+    const [feedbackRating, setFeedbackRating] = useState(0);
+    const [feedbackContent, setFeedbackContent] = useState('');
+    const [isFeedbackSubmitting, setIsFeedbackSubmitting] = useState(false);
+    const [activePoll, setActivePoll] = useState<any>(null);
+    const [hasVoted, setHasVoted] = useState(false);
+    const [isVoting, setIsVoting] = useState(false);
+    const [pollResults, setPollResults] = useState<any>(null);
+    const [isPollOpen, setIsPollOpen] = useState(false);
+    const [isPollEnabled, setIsPollEnabled] = useState(true);
+    const [isFeedbackEnabled, setIsFeedbackEnabled] = useState(true);
 
     React.useEffect(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const tableId = params.get('table');
             if (tableId) setTableNumber(tableId);
+            
+            // Initial poll fetch
+            fetchPoll();
+            fetchSettings();
         }
     }, []);
+
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/settings');
+            const data = await res.json();
+            setIsPollEnabled(data.isPollEnabled ?? true);
+            setIsFeedbackEnabled(data.isFeedbackEnabled ?? true);
+        } catch (e) {}
+    };
+
+    const fetchPoll = async () => {
+        try {
+            const res = await fetch('/api/polls');
+            const data = await res.json();
+            if (data.poll) {
+                setActivePoll(data.poll);
+                setPollResults(data.results);
+                const votedPolls = JSON.parse(localStorage.getItem('votedPolls') || '{}');
+                if (votedPolls[data.poll.id]) {
+                    setHasVoted(true);
+                } else {
+                    // Auto open for new voters IF poll is enabled
+                    const settingsRes = await fetch('/api/settings');
+                    const settingsData = await settingsRes.json();
+                    if (settingsData.isPollEnabled !== false) {
+                        setIsPollOpen(true);
+                    }
+                }
+            }
+        } catch (e) {}
+    };
+
+    const handleVote = async (optionIndex: number) => {
+        if (hasVoted || isVoting || !activePoll) return;
+        setIsVoting(true);
+        try {
+            const res = await fetch('/api/polls', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    pollId: activePoll.id,
+                    optionIndex,
+                    tableNumber
+                })
+            });
+            if (res.ok) {
+                const votedPolls = JSON.parse(localStorage.getItem('votedPolls') || '{}');
+                votedPolls[activePoll.id] = true;
+                localStorage.setItem('votedPolls', JSON.stringify(votedPolls));
+                setHasVoted(true);
+                fetchPoll(); // Refresh results
+            }
+        } catch (e) {
+        } finally {
+            setIsVoting(false);
+        }
+    };
+
+    const handleFeedbackSubmit = async () => {
+        if (!feedbackContent || feedbackRating === 0 || isFeedbackSubmitting) return;
+        setIsFeedbackSubmitting(true);
+        try {
+            const res = await fetch('/api/feedback', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content: feedbackContent,
+                    rating: feedbackRating,
+                    tableNumber
+                })
+            });
+            if (res.ok) {
+                setFeedbackContent('');
+                setFeedbackRating(0);
+                setIsFeedbackOpen(false);
+                setSubmitMessage({ type: 'success', text: 'Thank you for your feedback!' });
+                setTimeout(() => setSubmitMessage(null), 3000);
+            }
+        } catch (e) {
+            setSubmitMessage({ type: 'error', text: 'Failed to send feedback' });
+        } finally {
+            setIsFeedbackSubmitting(false);
+        }
+    };
 
     const triggerFlyAnimation = (imageSrc: string, startX: number, startY: number, endX: number, endY: number) => {
         const flyEl = document.createElement('img');
@@ -239,6 +338,29 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
                     <Info size={20} />
                     <span className="text-sm font-bold hidden sm:block">About Us</span>
                 </button>
+
+                {isFeedbackEnabled && (
+                    <button
+                        onClick={() => setIsFeedbackOpen(true)}
+                        className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-all duration-300 hover:scale-105 bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 shadow-sm"
+                        aria-label="Feedback"
+                    >
+                        <MessageSquare size={20} />
+                        <span className="text-sm font-bold hidden sm:block">Feedback</span>
+                    </button>
+                )}
+
+                {isPollEnabled && activePoll && (
+                    <button
+                        onClick={() => setIsPollOpen(true)}
+                        className="flex items-center gap-1.5 text-stone-500 hover:text-amber-600 transition-all duration-300 hover:scale-105 bg-white/50 backdrop-blur-sm px-3 py-1.5 sm:px-4 sm:py-2 rounded-full border border-stone-200 shadow-sm relative"
+                        aria-label="Community Poll"
+                    >
+                        <PieChart size={20} />
+                        <span className="text-sm font-bold hidden sm:block">Poll</span>
+                        {!hasVoted && <span className="absolute -top-1 -right-1 w-3 h-3 bg-amber-500 rounded-full border-2 border-white animate-bounce"></span>}
+                    </button>
+                )}
             </div>
 
             {/* Level 1 Tabs (Main Categories) Straddling the Color Horizon */}
@@ -322,6 +444,7 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
                             </div>
                         </div>
                     )}
+
 
                     {/* Menu Content */}
                     {activeItems && activeItems.length > 0 && (
@@ -777,19 +900,200 @@ export default function Menu({ initialData, isPaused }: MenuProps) {
                             </div>
 
                             <div className="mt-8 pt-6 border-t border-stone-200 grid grid-cols-2 gap-6">
-                                <div>
-                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Location</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Faubourg de l'Hôpital 31, Neuchâtel,<br />Switzerland 2000</p>
+                                <div className="col-span-2 sm:col-span-1">
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-2 uppercase tracking-wider flex items-center gap-2">
+                                        <MapPin size={14} className="text-emerald-600" /> Location
+                                    </h4>
+                                    <a 
+                                        href="https://maps.app.goo.gl/HHv4dyfjzJqB2kj56" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="text-stone-500 text-xs sm:text-sm font-medium hover:text-emerald-700 transition-colors flex items-start gap-1 group"
+                                    >
+                                        <span>Faubourg de l'Hôpital 31, Neuchâtel,<br />Switzerland 2000</span>
+                                        <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity mt-1" />
+                                    </a>
                                 </div>
                                 <div className="text-right sm:text-left">
-                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Hours</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">Lundi-Samedi:<br />  09h00-14h30 I 18h00-22h00 </p>
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-2 uppercase tracking-wider">Hours</h4>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium leading-relaxed">Lundi-Samedi:<br />  09h00-14h30<br />18h00-22h00 </p>
                                 </div>
-                                <div className="col-span-2">
-                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-1 uppercase tracking-wider">Contact</h4>
-                                    <p className="text-stone-500 text-xs sm:text-sm font-medium">nomade.cuisinetib@gmail.com<br />+41 0327213444</p>
+                                <div>
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-2 uppercase tracking-wider">Contact</h4>
+                                    <p className="text-stone-500 text-xs sm:text-sm font-medium leading-relaxed">nomade.cuisinetib@gmail.com<br />+41 0327213444</p>
+                                </div>
+                                <div className="text-right sm:text-left">
+                                    <h4 className="font-black text-gray-900 text-[11px] sm:text-xs mb-2 uppercase tracking-wider flex items-center justify-end sm:justify-start gap-2">
+                                        <Camera size={14} className="text-pink-600" /> Socials
+                                    </h4>
+                                    <a 
+                                        href="https://www.instagram.com/nomadecuisinetibetaine/" 
+                                        target="_blank" 
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-2 px-3 py-1.5 bg-gradient-to-tr from-amber-500 to-pink-500 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-sm hover:shadow-md active:scale-95 transition-all"
+                                    >
+                                        Instagram
+                                    </a>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Feedback Modal */}
+            {isFeedbackOpen && (
+                <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-stone-900/40 backdrop-blur-md" onClick={() => setIsFeedbackOpen(false)}></div>
+                    <div className="relative bg-white w-full max-w-sm rounded-[2.5rem] overflow-hidden shadow-2xl animate-in zoom-in-95 duration-200">
+                        <div className="p-8">
+                            <div className="flex justify-between items-center mb-6">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-3 bg-amber-100 rounded-2xl text-amber-600">
+                                        <MessageSquare size={24} />
+                                    </div>
+                                    <h2 className="text-2xl font-black text-gray-900 leading-tight">Rate Us</h2>
+                                </div>
+                                <button onClick={() => setIsFeedbackOpen(false)} className="p-2 hover:bg-stone-100 rounded-full transition-colors">
+                                    <X size={20} />
+                                </button>
+                            </div>
+
+                            <div className="flex justify-center gap-2 mb-8">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                    <button
+                                        key={star}
+                                        onClick={() => setFeedbackRating(star)}
+                                        className={`transition-all duration-300 ${feedbackRating >= star ? 'scale-110' : 'scale-100 opacity-30 grayscale'}`}
+                                    >
+                                        <Star 
+                                            size={40} 
+                                            className={`${feedbackRating >= star ? 'fill-amber-500 text-amber-500' : 'text-stone-300'}`}
+                                            strokeWidth={1.5}
+                                        />
+                                    </button>
+                                ))}
+                            </div>
+
+                            <textarea
+                                value={feedbackContent}
+                                onChange={(e) => setFeedbackContent(e.target.value)}
+                                placeholder="Tell us what you loved or how we can improve..."
+                                className="w-full h-32 bg-stone-50 border-2 border-stone-100 rounded-2xl p-4 text-sm font-medium text-gray-900 focus:border-amber-400 outline-none transition-all resize-none mb-6 placeholder:text-stone-400"
+                            />
+
+                            <button
+                                onClick={handleFeedbackSubmit}
+                                disabled={!feedbackContent || feedbackRating === 0 || isFeedbackSubmitting}
+                                className="w-full py-4 bg-amber-600 hover:bg-amber-700 disabled:bg-stone-200 text-white font-black rounded-xl shadow-lg shadow-amber-600/30 transition-all flex justify-center items-center gap-2"
+                            >
+                                {isFeedbackSubmitting ? (
+                                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                ) : (
+                                    <>
+                                        <Send size={18} />
+                                        Send Feedback
+                                    </>
+                                )}
+                            </button>
+                            {tableNumber && (
+                                <p className="mt-4 text-center text-[10px] text-stone-400 font-bold uppercase tracking-widest">
+                                    Table {tableNumber} detected
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Community Poll Modal */}
+            {isPollOpen && activePoll && (
+                <div className="fixed inset-0 z-[75] flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-300">
+                    <div className="absolute inset-0 bg-stone-900/60 backdrop-blur-sm" onClick={() => setIsPollOpen(false)}></div>
+                    <div className="relative bg-white w-full max-w-md rounded-[2.5rem] overflow-hidden shadow-2xl z-10 animate-in zoom-in-95 duration-200">
+                        <button
+                            onClick={() => setIsPollOpen(false)}
+                            className="absolute top-4 right-4 z-20 w-10 h-10 bg-stone-100 hover:bg-stone-200 text-stone-500 rounded-full flex items-center justify-center transition-colors"
+                        >
+                            <X size={20} />
+                        </button>
+
+                        <div className="p-8">
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className="p-3 bg-amber-100 rounded-2xl text-amber-600">
+                                    <PieChart size={24} />
+                                </div>
+                                <div className="flex flex-col">
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-amber-600/60">Nomade Community</span>
+                                    <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest leading-tight">Live Guest Poll</h3>
+                                </div>
+                            </div>
+
+                            <h2 className="text-2xl font-black text-gray-900 mb-8 leading-tight tracking-tight text-center">
+                                {activePoll.question}
+                            </h2>
+
+                            <div className="space-y-4">
+                                {Array.isArray(activePoll.options) && activePoll.options.map((option: string, index: number) => {
+                                    const result = pollResults?.find((r: any) => r.optionIndex === index);
+                                    const totalVotes = pollResults ? pollResults.reduce((acc: number, r: any) => acc + r.count, 0) : 0;
+                                    const percentage = totalVotes > 0 
+                                        ? Math.round((result?.count || 0) / totalVotes * 100) 
+                                        : 0;
+                                    
+                                    return (
+                                        <button
+                                            key={index}
+                                            onClick={() => handleVote(index)}
+                                            disabled={hasVoted || isVoting}
+                                            className={`w-full relative h-16 rounded-2xl overflow-hidden border-2 transition-all duration-300 flex items-center group ${
+                                                hasVoted 
+                                                ? 'border-stone-100 cursor-default bg-stone-50/50' 
+                                                : 'border-stone-100 hover:border-amber-400 bg-stone-50/50 hover:bg-amber-50 active:scale-[0.98]'
+                                            }`}
+                                        >
+                                            {hasVoted && (
+                                                <div 
+                                                    className="absolute inset-y-0 left-0 bg-amber-100/80 transition-all duration-1000 ease-out"
+                                                    style={{ width: `${percentage}%` }}
+                                                ></div>
+                                            )}
+                                            
+                                            <div className="absolute inset-0 px-6 flex items-center justify-between font-black">
+                                                <span className={`text-lg transition-colors ${hasVoted ? 'text-amber-900' : 'text-stone-600 group-hover:text-amber-700'}`}>
+                                                    {option}
+                                                </span>
+                                                {hasVoted && (
+                                                    <div className="flex flex-col items-end">
+                                                        <span className="text-amber-700 text-xl">{percentage}%</span>
+                                                        <span className="text-[8px] uppercase tracking-widest text-amber-600/60">{result?.count || 0} votes</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {hasVoted ? (
+                                <div className="mt-8 p-4 bg-emerald-50 rounded-2xl border border-emerald-100 text-center animate-in slide-in-from-top-2">
+                                    <p className="text-emerald-700 font-bold flex items-center justify-center gap-2">
+                                        <Star size={18} className="fill-emerald-400 text-emerald-400" />
+                                        Thank you for your voice!
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="mt-8 text-xs text-center font-bold text-stone-400 uppercase tracking-widest">
+                                    Select an option above to vote
+                                </p>
+                            )}
+
+                            <button 
+                                onClick={() => setIsPollOpen(false)}
+                                className="w-full mt-8 py-4 bg-stone-900 hover:bg-black text-white font-black rounded-2xl transition-all active:scale-95 shadow-lg shadow-stone-200"
+                            >
+                                CONTINUE TO MENU
+                            </button>
                         </div>
                     </div>
                 </div>
