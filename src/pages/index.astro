@@ -4,6 +4,10 @@ import Menu from "../components/Menu";
 
 import { fetchMenuData } from "../lib/loyverse";
 const menuData = await fetchMenuData();
+
+import { db, StoreSettings, eq } from 'astro:db';
+const settings = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1)).get();
+const isPaused = settings?.isOrderingPaused ?? false;
 ---
 
 <Layout>
@@ -56,7 +60,7 @@ const menuData = await fetchMenuData();
 
 		{/* Menu Section natively handles its own split background */}
 		<div class="relative z-20">
-			<Menu client:load initialData={menuData} />
+			<Menu client:load initialData={menuData} isPaused={isPaused} />
 		</div>
 
 		{/* Footer in Matcha */}

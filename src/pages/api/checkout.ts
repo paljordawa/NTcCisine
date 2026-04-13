@@ -20,6 +20,13 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     const settingsList = await db.select().from(StoreSettings).where(eq(StoreSettings.id, 1));
     const settings = settingsList.length > 0 ? settingsList[0] : null;
 
+    if (settings && settings.isOrderingPaused) {
+        return new Response(JSON.stringify({ error: "Ordering is temporarily paused by the kitchen. Please try again in a few minutes." }), {
+            status: 403,
+            headers: { 'Content-Type': 'application/json' }
+        });
+    }
+
     if (settings && settings.storePin) {
         if (providedPin !== settings.storePin) {
             console.log(`[Security Alert] Blocked order attempt with invalid PIN: ${providedPin}`);

@@ -5,7 +5,7 @@ const os = require('os');
 
 const app = express();
 const PORT = 8000;
-const PRINTER_IP = "192.168.1.106";
+const PRINTER_IP = "192.168.1.109";
 
 // Enable CORS so the Cloudflare website can securely hit this local endpoint
 app.use(cors());

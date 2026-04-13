@@ -9,9 +9,10 @@ interface CartItem {
 
 interface MenuProps {
     initialData: MainCategory[];
+    isPaused?: boolean;
 }
 
-export default function Menu({ initialData }: MenuProps) {
+export default function Menu({ initialData, isPaused }: MenuProps) {
     const [activeMainId, setActiveMainId] = useState<string | null>(null);
     const activeMainCategory = activeMainId ? initialData.find(c => c.id === activeMainId) || initialData[0] : initialData[0];
     const [activeSubId, setActiveSubId] = useState<string | null>(null);
@@ -68,6 +69,8 @@ export default function Menu({ initialData }: MenuProps) {
     };
 
     const handleAddToCart = (item: MenuItem, e?: React.MouseEvent) => {
+        if (isPaused) return;
+
         if (e) {
             const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
             const startX = rect.left + rect.width / 2;
@@ -128,7 +131,7 @@ export default function Menu({ initialData }: MenuProps) {
     };
 
     const handleCheckout = async () => {
-        if (cartItems.length === 0) return;
+        if (cartItems.length === 0 || isPaused) return;
 
         if (!showPinPrompt) {
             setShowPinPrompt(true);
@@ -380,7 +383,7 @@ export default function Menu({ initialData }: MenuProps) {
                                                         >
                                                             {item.variants.map((v: any) => (
                                                                 <option key={v.variant_id} value={v.variant_id} className="text-gray-900">
-                                                                    {v.name}
+                                                                    {v.name} - {v.price}
                                                                 </option>
                                                             ))}
                                                         </select>
@@ -394,12 +397,14 @@ export default function Menu({ initialData }: MenuProps) {
                                                     </span>
                                                 )}
 
-                                                <button
-                                                    onClick={(e) => handleAddToCart(item, e)}
-                                                    className="shrink-0 bg-emerald-400 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
-                                                >
-                                                    <Plus className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
-                                                </button>
+                                                {!isPaused && (
+                                                    <button
+                                                        onClick={(e) => handleAddToCart(item, e)}
+                                                        className="shrink-0 bg-emerald-400 hover:bg-emerald-600 text-emerald-700 hover:text-white border border-emerald-200 hover:border-emerald-500 w-7 h-7 md:w-9 md:h-9 lg:w-11 lg:h-11 xl:w-12 xl:h-12 rounded-full transition-all duration-300 font-bold flex items-center justify-center group-hover:shadow-[0_0_15px_rgba(217,119,6,0.3)] ml-auto"
+                                                    >
+                                                        <Plus className="w-4 h-4 lg:w-5 lg:h-5 xl:w-6 xl:h-6" />
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -457,7 +462,7 @@ export default function Menu({ initialData }: MenuProps) {
                                                     >
                                                         {item.variants.map((v: any) => (
                                                             <option key={v.variant_id} value={v.variant_id} className="bg-white text-gray-900">
-                                                                {v.name}
+                                                                {v.name} - {v.price}
                                                             </option>
                                                         ))}
                                                     </select>
@@ -475,13 +480,15 @@ export default function Menu({ initialData }: MenuProps) {
                                                         </span>
                                                     ))}
                                                 </div>
-                                                <button
-                                                    onClick={(e) => handleAddToCart(item, e)}
-                                                    className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 lg:px-6 lg:py-3 xl:px-8 xl:py-4 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
-                                                >
-                                                    <Plus className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
-                                                    <span className="hidden md:inline lg:text-lg">Add</span>
-                                                </button>
+                                                {!isPaused && (
+                                                    <button
+                                                        onClick={(e) => handleAddToCart(item, e)}
+                                                        className="ml-auto w-10 h-10 md:w-auto md:px-5 md:py-2.5 lg:px-6 lg:py-3 xl:px-8 xl:py-4 bg-stone-50 hover:bg-amber-600 text-amber-700 hover:text-white border border-stone-200 hover:border-amber-500 rounded-full md:rounded-2xl transition-all duration-300 font-bold flex items-center justify-center gap-2 group-hover:shadow-[0_0_20px_rgba(217,119,6,0.2)]"
+                                                    >
+                                                        <Plus className="w-5 h-5 md:w-4 md:h-4 lg:w-5 lg:h-5" />
+                                                        <span className="hidden md:inline lg:text-lg">Add</span>
+                                                    </button>
+                                                )}
                                             </div>
                                         </div>
                                     </div>
@@ -541,7 +548,7 @@ export default function Menu({ initialData }: MenuProps) {
                                         style={{ backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23d97706'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E")`, backgroundPosition: 'right 1rem center', backgroundRepeat: 'no-repeat', backgroundSize: '1.2em' }}
                                     >
                                         {selectedItem.variants.map((v: any) => (
-                                            <option key={v.variant_id} value={v.variant_id}>{v.name}</option>
+                                            <option key={v.variant_id} value={v.variant_id}>{v.name} - {v.price}</option>
                                         ))}
                                     </select>
                                 </div>
@@ -558,11 +565,14 @@ export default function Menu({ initialData }: MenuProps) {
                                     </span>
                                 </div>
                                 <button
-                                    onClick={(e) => { handleAddToCart(selectedItem, e); setSelectedItem(null); }}
-                                    className="bg-amber-500 hover:bg-gray-900 text-white px-8 py-4 sm:py-4 rounded-3xl sm:rounded-[2rem] text-sm sm:text-base font-black shadow-xl shadow-amber-500/30 hover:shadow-gray-900/30 transition-all duration-300 flex items-center gap-2 transform active:scale-95"
+                                    onClick={(e) => { if (!isPaused) { handleAddToCart(selectedItem, e); setSelectedItem(null); } }}
+                                    disabled={isPaused}
+                                    className={`px-8 py-4 sm:py-4 rounded-3xl sm:rounded-[2rem] text-sm sm:text-base font-black transition-all duration-300 flex items-center gap-2 transform active:scale-95 ${isPaused 
+                                        ? 'bg-stone-200 text-stone-500 cursor-not-allowed shadow-none' 
+                                        : 'bg-amber-500 hover:bg-gray-900 text-white shadow-xl shadow-amber-500/30 hover:shadow-gray-900/30'}`}
                                 >
-                                    <Plus strokeWidth={3} size={18} />
-                                    Add Order
+                                    {isPaused ? <Info size={18} /> : <Plus strokeWidth={3} size={18} />}
+                                    {isPaused ? 'Ordering Paused' : 'Add Order'}
                                 </button>
                             </div>
                         </div>
@@ -698,13 +708,13 @@ export default function Menu({ initialData }: MenuProps) {
 
                                         <button
                                             onClick={handleCheckout}
-                                            disabled={isSubmitting || cartItems.length === 0}
+                                            disabled={isSubmitting || cartItems.length === 0 || isPaused}
                                             className="w-full py-4 bg-amber-600 hover:bg-stone-900 disabled:bg-stone-200 disabled:text-stone-500 disabled:transform-none disabled:shadow-none text-white text-lg font-black rounded-xl shadow-lg shadow-amber-600/40 hover:shadow-stone-900/30 transition-all transform hover:-translate-y-1 flex justify-center items-center"
                                         >
                                             {isSubmitting ? (
                                                 <div className="w-6 h-6 border-2 border-stone-200 border-t-white rounded-full animate-spin"></div>
                                             ) : (
-                                                'Send to Counter'
+                                                isPaused ? 'Ordering Paused' : 'Send to Counter'
                                             )}
                                         </button>
                                     </div>

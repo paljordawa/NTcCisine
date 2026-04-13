@@ -361,8 +361,9 @@ export default function CounterDashboard() {
             });
 
             if (!printRes.ok) {
-                 console.error("Printer rejected the job:", printRes.statusText);
-                 alert("Kitchen Printer Error! Check printer power/paper.");
+                const errorText = await printRes.text();
+                console.error("Printer rejected the job:", printRes.status, printRes.statusText, errorText);
+                alert(`Kitchen Printer Error (Status ${printRes.status}):\n${printRes.statusText}\n\nPlease check if ePOS-Print is enabled in your printer settings.`);
             }
         } catch (e) {
             console.error("Print connection error:", e);
